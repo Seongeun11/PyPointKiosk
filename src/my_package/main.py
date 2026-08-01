@@ -1,3 +1,4 @@
+#src\my_package\main.py
 import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
 from controller.main_controller import MainController

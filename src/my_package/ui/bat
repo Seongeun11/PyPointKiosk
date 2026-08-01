@@ -1,1 +1,1 @@
-pyside6-uic src/my_package/ui/order_menu.ui -o ui_order_menu.py
+pyside6-uic src/my_package/ui/order_menu_fhd.ui -o ui_order_menu_fhd.py

@@ -1,69 +1,43 @@
 {
   "categories": [
     {
-      "id": "coffee",
-      "name": "커피",
+      "id": "drink",
+      "name": "음료",
       "products": [
-        {"id": 101, "name": "아메리카노", "price": 2500, "image": "resources/images/americano.png"},
-        {"id": 102, "name": "카페라떼", "price": 3000, "image": "resources/images/latte.png"},
-        {"id": 103, "name": "바닐라라떼", "price": 3500, "image": "resources/images/vanilla.png"},
-        {"id": 104, "name": "카푸치노", "price": 3500, "image": "resources/images/cappuccino.png"},
-        {"id": 101, "name": "아메리카노2", "price": 2500, "image": "resources/images/americano.png"},
-        {"id": 102, "name": "카페라떼2", "price": 3000, "image": "resources/images/latte.png"},
-        {"id": 103, "name": "바닐라라떼2", "price": 3500, "image": "resources/images/vanilla.png"},
-        {"id": 104, "name": "카푸치노3", "price": 3500, "image": "resources/images/cappuccino.png"},
-        {"id": 101, "name": "아메리카노3", "price": 2500, "image": "resources/images/americano.png"},
-        {"id": 102, "name": "카페라떼3", "price": 3000, "image": "resources/images/latte.png"},
-        {"id": 103, "name": "바닐라라떼3", "price": 3500, "image": "resources/images/vanilla.png"},
-        {"id": 104, "name": "카푸치노3", "price": 3500, "image": "resources/images/cappuccino.png"}
+        {"id": 101, "name": "매실", "price": 2000, "image": "resources/images/plum.png"},
+        {"id": 102, "name": "자허블", "price": 3000, "image": "resources/images/BlackTea.png"},
+        {"id": 103, "name": "아아", "price": 3500, "image": "resources/images/Americano.png"},
+        {"id": 104, "name": "히비스커스", "price": 3500, "image": "resources/images/HibiscusTea.png"},
+        {"id": 105, "name": "밀크티", "price": 2500, "image": "resources/images/MilkTea.png"},
+        {"id": 106, "name": "쇼콜라모카", "price": 3500, "image": "resources/images/ChocolateMocha.png"}
+       
       ]
     },
     {
-      "id": "beverage",
-      "name": "음료/에이드",
+      "id": "latte",
+      "name": "라떼",
       "products": [
-        {"id": 201, "name": "청포도 에이드", "price": 4500, "image": "resources/images/ade.png"},
-        {"id": 202, "name": "자몽 에이드", "price": 4500, "image": "resources/images/grapefruit.png"}
+        {"id": 201, "name": "복숭아라떼", "price": 3000, "image": "resources/images/PeachLatte.png"},
+        {"id": 202, "name": "딸기라떼", "price": 3500, "image": "resources/images/StrawberryLatte.png"},
+        {"id": 203, "name": "초코라떼", "price": 2500, "image": "resources/images/ChocoLatte.png"},
+        {"id": 204, "name": "말차라떼", "price": 3000, "image": "resources/images/MatchaLatte.png"},
+        {"id": 205, "name": "흑임자라떼", "price": 3500, "image": "resources/images/BlackSesameLatte.png"},
+        {"id": 206, "name": "블루베리라떼", "price": 3500, "image": "resources/images/BlueberryLatte.png"}
       ]
     },
     {
       "id": "desert",
       "name": "디저트",
       "products": [
-        {"id": 301, "name": "초코케이크", "price": 5000, "image": "resources/images/chocolate_cake.png"},
-        {"id": 302, "name": "딸기 케이크", "price": 5500, "image": "resources/images/strawberry_cake.png"}
-      ]
-    },
-    {
-      "id": "desert2",
-      "name": "디저트2",
-      "products": [
-        {"id": 301, "name": "초코케이크2", "price": 5000, "image": "resources/images/chocolate_cake.png"},
-        {"id": 302, "name": "딸기 케이크2", "price": 5500, "image": "resources/images/strawberry_cake.png"}
-      ]
-    },
-    {
-      "id": "desert3",
-      "name": "디저트3",
-      "products": [
-        {"id": 301, "name": "초코케이크3", "price": 5000, "image": "resources/images/chocolate_cake.png"},
-        {"id": 302, "name": "딸기 케이크3", "price": 5500, "image": "resources/images/strawberry_cake.png"}
-      ]
-    },
-    {
-      "id": "desert3",
-      "name": "디저트3",
-      "products": [
-        {"id": 301, "name": "초코케이크3", "price": 5000, "image": "resources/images/chocolate_cake.png"},
-        {"id": 302, "name": "딸기 케이크3", "price": 5500, "image": "resources/images/strawberry_cake.png"}
-      ]
-    },
-    {
-      "id": "desert3",
-      "name": "디저트3",
-      "products": [
-        {"id": 301, "name": "초코케이크3", "price": 5000, "image": "resources/images/chocolate_cake.png"},
-        {"id": 302, "name": "딸기 케이크3", "price": 5500, "image": "resources/images/strawberry_cake.png"}
+        {"id": 301, "name": "커피젤리", "price": 5000, "image": "resources/images/CoffeeJelly.png"},
+        {"id": 302, "name": "쫀득쿠키", "price": 5500, "image": "resources/images/ChewyCookie.png"},
+        {"id": 303, "name": "디아망쿠키", "price": 5000, "image": "resources/images/DiamantCookie.png"},
+        {"id": 304, "name": "디아망쿠키세트", "price": 5500, "image": "resources/images/DiamantCookieSet.png"},
+        {"id": 305, "name": "바나나푸딩", "price": 5000, "image": "resources/images/BananaPudding.png"},
+        {"id": 306, "name": "휘낭시에", "price": 5500, "image": "resources/images/Financier.png"},
+        {"id": 307, "name": "버터떡", "price": 5000, "image": "resources/images/ButterRiceCake.png"},
+        {"id": 308, "name": "햄무스비", "price": 5500, "image": "resources/images/SpamMusubi.png"}
+        
       ]
     }
     

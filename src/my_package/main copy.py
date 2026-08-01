@@ -1,3 +1,4 @@
+#src\my_package\main_test.py
 import sys
 from PySide6.QtWidgets import QApplication
 from model.order_menu_model import OrderMenuModel
