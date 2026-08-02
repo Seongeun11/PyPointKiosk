@@ -9,22 +9,17 @@
         {"id": 103, "name": "아아", "price": 3500, "image": "resources/images/Americano.png"},
         {"id": 104, "name": "히비스커스", "price": 3500, "image": "resources/images/HibiscusTea.png"},
         {"id": 105, "name": "밀크티", "price": 2500, "image": "resources/images/MilkTea.png"},
-        {"id": 106, "name": "쇼콜라모카", "price": 3500, "image": "resources/images/ChocolateMocha.png"}
+        {"id": 106, "name": "쇼콜라모카", "price": 3500, "image": "resources/images/ChocolateMocha.png"},
+        {"id": 107, "name": "복숭아라떼", "price": 3000, "image": "resources/images/PeachLatte.png"},
+        {"id": 108, "name": "딸기라떼", "price": 3500, "image": "resources/images/StrawberryLatte.png"},
+        {"id": 109, "name": "초코라떼", "price": 2500, "image": "resources/images/ChocoLatte.png"},
+        {"id": 110, "name": "말차라떼", "price": 3000, "image": "resources/images/MatchaLatte.png"},
+        {"id": 111, "name": "흑임자라떼", "price": 3500, "image": "resources/images/BlackSesameLatte.png"},
+        {"id": 112, "name": "블루베리라떼", "price": 3500, "image": "resources/images/BlueberryLatte.png"}
        
       ]
     },
-    {
-      "id": "latte",
-      "name": "라떼",
-      "products": [
-        {"id": 201, "name": "복숭아라떼", "price": 3000, "image": "resources/images/PeachLatte.png"},
-        {"id": 202, "name": "딸기라떼", "price": 3500, "image": "resources/images/StrawberryLatte.png"},
-        {"id": 203, "name": "초코라떼", "price": 2500, "image": "resources/images/ChocoLatte.png"},
-        {"id": 204, "name": "말차라떼", "price": 3000, "image": "resources/images/MatchaLatte.png"},
-        {"id": 205, "name": "흑임자라떼", "price": 3500, "image": "resources/images/BlackSesameLatte.png"},
-        {"id": 206, "name": "블루베리라떼", "price": 3500, "image": "resources/images/BlueberryLatte.png"}
-      ]
-    },
+    
     {
       "id": "desert",
       "name": "디저트",

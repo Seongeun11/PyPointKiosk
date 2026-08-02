@@ -1,9 +1,15 @@
 #src\my_package\controller\order_menu_controller.py
-class OrderMenuController:
+from PySide6.QtCore import QObject, Signal  # QObject, Signal 추가
+
+class OrderMenuController(QObject):         # QObject 상속 추가
+    pay_requested_signal = Signal(list, int)      # [추가] 결제 요청 시그널 (파라미터: cart_items 목록, 총금액)
     def __init__(self, model, view):
+        super().__init__()
         self.model = model
         self.view = view
-
+        
+      
+        
         # View 이벤트 바인딩
         self.view.category_clicked_signal.connect(self.handle_category_click)
         self.view.product_clicked_signal.connect(self.handle_product_click)
@@ -58,6 +64,13 @@ class OrderMenuController:
             print("[Controller] 장바구니가 비어 있습니다.")
             return
         print(f"[Controller] 결제 진행 - 총 금액: {total_price:,}원")
+
+        cart_items = self.model.get_cart_items()
+        print(f"[Controller] 결제 진행 - 상품 종류: {len(cart_items)}개, 총 금액: {total_price:,}원")
+
+        # [핵심] 장바구니 상세 목록(cart_items)과 총액(total_price)을 같이 전달
+        self.pay_requested_signal.emit(cart_items, total_price)
+        
 
     def _refresh_cart_and_count(self):
         """Model 데이터를 읽어 View(장바구니 리스트 + 상품 개수)를 동기화"""
