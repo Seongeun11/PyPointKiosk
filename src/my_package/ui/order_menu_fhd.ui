@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>809</width>
-    <height>1920</height>
+    <width>720</width>
+    <height>1280</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -38,34 +38,21 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="lbl_title">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+    <widget class="QPushButton" name="btn_title">
      <property name="font">
       <font>
-       <family>맑은 고딕</family>
-       <pointsize>16</pointsize>
-       <bold>true</bold>
+       <pointsize>30</pointsize>
+       <bold>false</bold>
       </font>
      </property>
-     <property name="cursor">
-      <cursorShape>ArrowCursor</cursorShape>
+     <property name="focusPolicy">
+      <enum>Qt::FocusPolicy::NoFocus</enum>
      </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
+     <property name="styleSheet">
+      <string notr="true">background-color: transparent; border: none;</string>
      </property>
      <property name="text">
       <string>아카데미 포인트 키오스크</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignCenter</set>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
      </property>
     </widget>
    </item>

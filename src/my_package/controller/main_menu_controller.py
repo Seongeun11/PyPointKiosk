@@ -1,3 +1,4 @@
+#src\my_package\controller\main_menu_controller.py
 from PySide6.QtCore import QObject, Signal
 
 class MainMenuController(QObject):

@@ -1,5 +1,7 @@
 #src\my_package\controller\order_menu_controller.py
-from PySide6.QtCore import QObject, Signal  # QObject, Signal 추가
+from PySide6.QtCore import QObject, Signal
+
+from view.admin_menu_dialog_view import AdminMenuDialogView  # QObject, Signal 추가
 
 class OrderMenuController(QObject):         # QObject 상속 추가
     pay_requested_signal = Signal(list, int)      # [추가] 결제 요청 시그널 (파라미터: cart_items 목록, 총금액)
@@ -16,6 +18,7 @@ class OrderMenuController(QObject):         # QObject 상속 추가
         self.view.pay_clicked_signal.connect(self.handle_pay_click)
         # [추가] 전체 삭제 바인딩
         self.view.clear_cart_clicked_signal.connect(self.handle_clear_cart)
+        self.view.title_double_clicked_signal.connect(self.handle_title_double_click)  # [추가] 타이틀 클릭 이벤트 바인딩
         # [신규 추가] 수량 변경 및 단일 항목 삭제 핸들러 바인딩
         self.view.change_qty_signal.connect(self.handle_change_qty)
         self.view.remove_item_signal.connect(self.handle_remove_item)
@@ -36,6 +39,12 @@ class OrderMenuController(QObject):         # QObject 상속 추가
     #    cart_items = self.model.get_cart_items()
     #    total_price = self.model.get_total_price()
     #    self.view.update_cart_view(cart_items, total_price)
+    def handle_title_double_click(self):
+            print("[Controller] 타이틀 클릭 - 메인 메뉴로 돌아가기 요청")
+            dialog = AdminMenuDialogView(self.model, parent=self.view)
+            # 관리자 창이 닫히면 키오스크 메인 화면 업데이트
+            dialog.exec()
+            self.update_view()
 
     def handle_category_click(self, category_idx: int):
         self.model.set_category(category_idx)

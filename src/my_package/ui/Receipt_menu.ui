@@ -36,7 +36,7 @@
         <string notr="true">background-color: transparent;</string>
        </property>
        <property name="text">
-        <string>결제가 완료되었습니다.</string>
+        <string>주문이 완료되었습니다.</string>
        </property>
        <property name="frame">
         <bool>false</bool>
@@ -48,6 +48,11 @@
      </item>
      <item>
       <widget class="QTextEdit" name="txt_payment_list">
+       <property name="font">
+        <font>
+         <pointsize>20</pointsize>
+        </font>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::FocusPolicy::NoFocus</enum>
        </property>

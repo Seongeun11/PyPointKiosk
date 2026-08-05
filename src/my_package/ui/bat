@@ -1,7 +1,13 @@
+pyside6-uic src/my_package/ui/main_menu.ui -o ui_main_menu.py
+
+
 pyside6-uic src/my_package/ui/order_menu_fhd.ui -o ui_order_menu_fhd.py
 
 pyside6-uic src/my_package/ui/payment_menu.ui -o ui_payment_menu.py
 
-pyside6-uic src/my_package/ui/main_menu.ui -o ui_main_menu.py
 
 pyside6-uic src/my_package/ui/receipt_menu.ui -o ui_receipt_menu.py
+
+pyside6-uic src/my_package/ui/admin_menu.ui -o ui_admin_menu.py
+
+pyside6-uic src/my_package/ui/admin_menu_dialog.ui -o ui_admin_menu_dialog.py

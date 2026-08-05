@@ -4,18 +4,27 @@ from PySide6.QtWidgets import (
     QWidget, QSizePolicy, QPushButton, QToolButton, QLayout, QSpacerItem,
     QScrollArea, QHBoxLayout, QGridLayout, QListWidgetItem
 )
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QResizeEvent, QShowEvent
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QResizeEvent, QShowEvent, QMouseEvent
 from PySide6.QtCore import QSize, Qt, Signal, QTimer
 
 # 자동 생성된 UI 클래스 import
 from ui.ui_order_menu_fhd import Ui_Form
 from custom_widget.cart_item_widget import CartItemWidget
 
+# 타이틀 버튼의 더블클릭을 감지하기 위한 Custom PushButton
+class TitleButton(QPushButton):
+    double_clicked = Signal()
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.double_clicked.emit()
+        super().mouseDoubleClickEvent(event)
 
 class OrderMenuView(QWidget):
     category_clicked_signal = Signal(int)
     product_clicked_signal = Signal(dict)
     pay_clicked_signal = Signal()
+    title_double_clicked_signal = Signal()  # [추가] 타이틀 더블클릭 시그널
     clear_cart_clicked_signal = Signal()  # [추가] 장바구니 전체 삭제 시그널
     # [수량 조절 및 삭제 시그널 추가]
     change_qty_signal = Signal(str, int)  # (product_id, delta)
@@ -35,13 +44,13 @@ class OrderMenuView(QWidget):
 
         # 4열 고정 규격
         self.GRID_COLS = 4
-        self.GRID_ROWS = 2
+        self.GRID_ROWS = 3
         # 1페이지당 기본 아이템 개수 (열 x 행)
         self.GRID_PAGE_SIZE = self.GRID_COLS * self.GRID_ROWS
         
         # 행 수에 따른 버튼 적정 높이 계산 (예: 2행=300px, 3행=200px 등)
         # 키오스크 해상도나 레이아웃에 맞춰 적절한 기본 높이 로직을 적용합니다.
-        self.BUTTON_HEIGHT = 200
+        self.BUTTON_HEIGHT = 280
         self.PRODUCT_BTN_HEIGHT = max(self.BUTTON_HEIGHT, int(600 / self.GRID_ROWS))
 
         #CATEGORY 관련 상수
@@ -153,6 +162,14 @@ class OrderMenuView(QWidget):
             self.ui.btn_all_delete.clicked.connect(
                 lambda: self.clear_cart_clicked_signal.emit()
             )
+        if hasattr(self.ui, "btn_title"):
+            # 기존 btn_title의 mouseDoubleClickEvent 재정의
+            self.ui.btn_title.mouseDoubleClickEvent = self._on_title_double_clicked
+            #self.ui.btn_title.clicked.connect(lambda: self.title_double_clicked_signal.emit())
+
+    def _on_title_double_clicked(self, event: QMouseEvent):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.title_double_clicked_signal.emit()
 
     def _get_placeholder_icon(self) -> QIcon:
         pixmap = QPixmap(120, 120)
@@ -202,9 +219,9 @@ class OrderMenuView(QWidget):
 
         # 1. 타이틀 라벨 (lbl_title)
         if hasattr(self.ui, "lbl_title"):
-            font = self.ui.lbl_title.font()
+            font = self.ui.btn_title.font()
             font.setPointSize(title_font_size)
-            self.ui.lbl_title.setFont(font)
+            self.ui.btn_title.setFont(font)
 
         # 2. 카테고리 버튼
         for i in range(self.category_layout.count()):

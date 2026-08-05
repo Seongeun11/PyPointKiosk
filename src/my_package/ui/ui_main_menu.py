@@ -15,8 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QLineEdit, QPushButton, QSizePolicy,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QGridLayout, QLineEdit, QPushButton,
+    QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -29,8 +29,8 @@ class Ui_Form(object):
         sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
         Form.setSizePolicy(sizePolicy)
         Form.setMinimumSize(QSize(720, 1280))
-        self.verticalLayout = QVBoxLayout(Form)
-        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout_4 = QVBoxLayout(Form)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.verticalLayout_2 = QVBoxLayout()
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.le_title = QLineEdit(Form)
@@ -51,7 +51,7 @@ class Ui_Form(object):
         self.verticalLayout_2.addWidget(self.le_title)
 
 
-        self.verticalLayout.addLayout(self.verticalLayout_2)
+        self.verticalLayout_4.addLayout(self.verticalLayout_2)
 
         self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -68,8 +68,42 @@ class Ui_Form(object):
         self.verticalLayout_3.addWidget(self.le_sub_title)
 
 
-        self.verticalLayout.addLayout(self.verticalLayout_3)
+        self.verticalLayout_4.addLayout(self.verticalLayout_3)
 
+        self.gridLayout = QGridLayout()
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.btn_japanese = QPushButton(Form)
+        self.btn_japanese.setObjectName(u"btn_japanese")
+        sizePolicy.setHeightForWidth(self.btn_japanese.sizePolicy().hasHeightForWidth())
+        self.btn_japanese.setSizePolicy(sizePolicy)
+        self.btn_japanese.setFont(font1)
+        self.btn_japanese.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        self.gridLayout.addWidget(self.btn_japanese, 0, 1, 1, 1)
+
+        self.btn_korean = QPushButton(Form)
+        self.btn_korean.setObjectName(u"btn_korean")
+        sizePolicy.setHeightForWidth(self.btn_korean.sizePolicy().hasHeightForWidth())
+        self.btn_korean.setSizePolicy(sizePolicy)
+        self.btn_korean.setFont(font1)
+        self.btn_korean.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        self.gridLayout.addWidget(self.btn_korean, 0, 0, 1, 1)
+
+        self.btn_english = QPushButton(Form)
+        self.btn_english.setObjectName(u"btn_english")
+        sizePolicy.setHeightForWidth(self.btn_english.sizePolicy().hasHeightForWidth())
+        self.btn_english.setSizePolicy(sizePolicy)
+        self.btn_english.setFont(font1)
+        self.btn_english.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        self.gridLayout.addWidget(self.btn_english, 0, 2, 1, 1)
+
+
+        self.verticalLayout_4.addLayout(self.gridLayout)
+
+        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.btn_start_main_menu = QPushButton(Form)
         self.btn_start_main_menu.setObjectName(u"btn_start_main_menu")
         sizePolicy.setHeightForWidth(self.btn_start_main_menu.sizePolicy().hasHeightForWidth())
@@ -80,6 +114,11 @@ class Ui_Form(object):
         self.verticalLayout.addWidget(self.btn_start_main_menu)
 
 
+        self.verticalLayout_4.addLayout(self.verticalLayout)
+
+        self.verticalLayout_4.setStretch(2, 1)
+        self.verticalLayout_4.setStretch(3, 5)
+
         self.retranslateUi(Form)
 
         QMetaObject.connectSlotsByName(Form)
@@ -89,6 +128,9 @@ class Ui_Form(object):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
         self.le_title.setText(QCoreApplication.translate("Form", u"\ud658\uc601\ud569\ub2c8\ub2e4", None))
         self.le_sub_title.setText(QCoreApplication.translate("Form", u"\uc8fc\ubb38 \uc2dc\uc791\uc744 \ub20c\ub7ec\uc8fc\uc138\uc694", None))
+        self.btn_japanese.setText(QCoreApplication.translate("Form", u"\u65e5\u672c\u8a9e", None))
+        self.btn_korean.setText(QCoreApplication.translate("Form", u"\ud55c\uad6d\uc5b4", None))
+        self.btn_english.setText(QCoreApplication.translate("Form", u"English", None))
         self.btn_start_main_menu.setText(QCoreApplication.translate("Form", u"\uc8fc\ubb38 \uc2dc\uc791", None))
     # retranslateUi
 

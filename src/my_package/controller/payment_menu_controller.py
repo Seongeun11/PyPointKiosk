@@ -1,6 +1,7 @@
 #src\my_package\controller\payment_menu_controller.py
 from PySide6.QtCore import QObject, Signal
 from datetime import datetime
+from model.receipt_repository_model import ReceiptRepositoryModel
 
 class PaymentMenuController(QObject):
     payment_completed_signal = Signal(str) # 결제 완료 시 상위 컨트롤러 알림
@@ -9,6 +10,7 @@ class PaymentMenuController(QObject):
         super().__init__()
         self.model = model
         self.view = view
+        self.receipt_repo = ReceiptRepositoryModel() # [추가] 영수증 저장소 모델
 
         # View 시그널 연결
         self.view.discount_requested.connect(self.handle_discount)
@@ -25,14 +27,25 @@ class PaymentMenuController(QObject):
         self.refresh_view()
 
     def handle_payment(self, pay_type: str):
-        """결제 실행, 영수증 출력 및 상위 전달"""
-        # 1. 영수증 텍스트 생성
+
+        """결제 실행 -> JSON 영수증 저장 -> 영수증 텍스트 생성 후 전환"""
+        cart_list = getattr(self.model, 'cart_items', [])
+        purchase_amt = self.model.purchase_amount
+        discount_type = self.model.selected_discount_type
+        discount_amt = self.model.discount_amount
+        final_amt = self.model.get_final_payment_amount()
+
+        # [핵심] JSON 배열(1~999)에 영수증 데이터 기록
+        self.receipt_repo.add_receipt(
+            pay_type=pay_type,
+            cart_items=cart_list,
+            purchase_amount=purchase_amt,
+            discount_type=discount_type,
+            discount_amount=discount_amt,
+            final_amount=final_amt
+        )
+
         receipt_text = self.generate_receipt_text(pay_type)
-        
-        # 2. 콘솔 출력 (기존 기능 유지)
-        print(receipt_text)
-        
-        # 3. 영수증 텍스트를 포함하여 상위 컨트롤러(MainController)로 완료 알림
         self.payment_completed_signal.emit(receipt_text)
 
     def generate_receipt_text(self, pay_type: str) -> str:

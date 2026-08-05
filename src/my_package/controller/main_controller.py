@@ -1,3 +1,4 @@
+#src\my_package\controller\main_controller.py
 from PySide6.QtWidgets import QMainWindow, QStackedWidget, QMessageBox
 
 # Login Controller
@@ -60,7 +61,7 @@ class MainController(QMainWindow):
         # 2. 창 크기 잠금 해제 및 확장
         self.setMinimumSize(0, 0)
         self.setMaximumSize(16777215, 16777215)
-        self.resize(1280, 720)
+        #self.resize(1280, 720)
 
         # 3. 메인 메뉴 화면(MainMenu)으로 이동
         self.switch_to_main_menu()

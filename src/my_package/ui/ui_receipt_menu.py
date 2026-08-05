@@ -46,6 +46,9 @@ class Ui_Form(object):
 
         self.txt_payment_list = QTextEdit(Form)
         self.txt_payment_list.setObjectName(u"txt_payment_list")
+        font1 = QFont()
+        font1.setPointSize(20)
+        self.txt_payment_list.setFont(font1)
         self.txt_payment_list.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout.addWidget(self.txt_payment_list)
@@ -67,7 +70,7 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
-        self.le_title.setText(QCoreApplication.translate("Form", u"\uacb0\uc81c\uac00 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4.", None))
+        self.le_title.setText(QCoreApplication.translate("Form", u"\uc8fc\ubb38\uc774 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4.", None))
         self.btn_payment_completed.setText(QCoreApplication.translate("Form", u"\ucc98\uc74c\uc73c\ub85c \ub3cc\uc544\uac00\uae30", None))
     # retranslateUi
 

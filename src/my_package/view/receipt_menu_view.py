@@ -1,3 +1,4 @@
+#src\my_package\view\receipt_menu_view.py
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 from ui.ui_receipt_menu import Ui_Form

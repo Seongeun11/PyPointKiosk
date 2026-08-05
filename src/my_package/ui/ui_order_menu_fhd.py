@@ -15,15 +15,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QLabel,
-    QLayout, QLineEdit, QListWidget, QListWidgetItem,
-    QPushButton, QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QLayout,
+    QLineEdit, QListWidget, QListWidgetItem, QPushButton,
+    QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(809, 1920)
+        Form.resize(720, 1280)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -37,24 +37,16 @@ class Ui_Form(object):
         Form.setAutoFillBackground(False)
         self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.lbl_title = QLabel(Form)
-        self.lbl_title.setObjectName(u"lbl_title")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.lbl_title.sizePolicy().hasHeightForWidth())
-        self.lbl_title.setSizePolicy(sizePolicy1)
+        self.btn_title = QPushButton(Form)
+        self.btn_title.setObjectName(u"btn_title")
         font1 = QFont()
-        font1.setFamilies([u"\ub9d1\uc740 \uace0\ub515"])
-        font1.setPointSize(16)
-        font1.setBold(True)
-        self.lbl_title.setFont(font1)
-        self.lbl_title.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
-        self.lbl_title.setAutoFillBackground(False)
-        self.lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_title.setWordWrap(True)
+        font1.setPointSize(30)
+        font1.setBold(False)
+        self.btn_title.setFont(font1)
+        self.btn_title.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.btn_title.setStyleSheet(u"background-color: transparent; border: none;")
 
-        self.verticalLayout.addWidget(self.lbl_title)
+        self.verticalLayout.addWidget(self.btn_title)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -75,11 +67,11 @@ class Ui_Form(object):
         self.lst_my_order_details = QListWidget(Form)
         QListWidgetItem(self.lst_my_order_details)
         self.lst_my_order_details.setObjectName(u"lst_my_order_details")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.lst_my_order_details.sizePolicy().hasHeightForWidth())
-        self.lst_my_order_details.setSizePolicy(sizePolicy2)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.lst_my_order_details.sizePolicy().hasHeightForWidth())
+        self.lst_my_order_details.setSizePolicy(sizePolicy1)
         font2 = QFont()
         font2.setPointSize(20)
         font2.setBold(False)
@@ -92,8 +84,11 @@ class Ui_Form(object):
         self.gridLayout_2.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
         self.le_time_num = QLineEdit(Form)
         self.le_time_num.setObjectName(u"le_time_num")
-        sizePolicy1.setHeightForWidth(self.le_time_num.sizePolicy().hasHeightForWidth())
-        self.le_time_num.setSizePolicy(sizePolicy1)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.le_time_num.sizePolicy().hasHeightForWidth())
+        self.le_time_num.setSizePolicy(sizePolicy2)
         font3 = QFont()
         font3.setPointSize(20)
         font3.setBold(False)
@@ -111,8 +106,8 @@ class Ui_Form(object):
 
         self.btn_payment = QPushButton(Form)
         self.btn_payment.setObjectName(u"btn_payment")
-        sizePolicy1.setHeightForWidth(self.btn_payment.sizePolicy().hasHeightForWidth())
-        self.btn_payment.setSizePolicy(sizePolicy1)
+        sizePolicy2.setHeightForWidth(self.btn_payment.sizePolicy().hasHeightForWidth())
+        self.btn_payment.setSizePolicy(sizePolicy2)
         self.btn_payment.setMinimumSize(QSize(0, 150))
         self.btn_payment.setFont(font2)
         self.btn_payment.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
@@ -123,8 +118,8 @@ class Ui_Form(object):
 
         self.le_time_counter = QLineEdit(Form)
         self.le_time_counter.setObjectName(u"le_time_counter")
-        sizePolicy1.setHeightForWidth(self.le_time_counter.sizePolicy().hasHeightForWidth())
-        self.le_time_counter.setSizePolicy(sizePolicy1)
+        sizePolicy2.setHeightForWidth(self.le_time_counter.sizePolicy().hasHeightForWidth())
+        self.le_time_counter.setSizePolicy(sizePolicy2)
         self.le_time_counter.setFont(font3)
         self.le_time_counter.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
         self.le_time_counter.setMouseTracking(False)
@@ -146,8 +141,8 @@ class Ui_Form(object):
 
         self.le_total_price = QLineEdit(Form)
         self.le_total_price.setObjectName(u"le_total_price")
-        sizePolicy1.setHeightForWidth(self.le_total_price.sizePolicy().hasHeightForWidth())
-        self.le_total_price.setSizePolicy(sizePolicy1)
+        sizePolicy2.setHeightForWidth(self.le_total_price.sizePolicy().hasHeightForWidth())
+        self.le_total_price.setSizePolicy(sizePolicy2)
         font4 = QFont()
         font4.setPointSize(20)
         font4.setBold(False)
@@ -187,7 +182,7 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
-        self.lbl_title.setText(QCoreApplication.translate("Form", u"\uc544\uce74\ub370\ubbf8 \ud3ec\uc778\ud2b8 \ud0a4\uc624\uc2a4\ud06c", None))
+        self.btn_title.setText(QCoreApplication.translate("Form", u"\uc544\uce74\ub370\ubbf8 \ud3ec\uc778\ud2b8 \ud0a4\uc624\uc2a4\ud06c", None))
 
         __sortingEnabled = self.lst_my_order_details.isSortingEnabled()
         self.lst_my_order_details.setSortingEnabled(False)
