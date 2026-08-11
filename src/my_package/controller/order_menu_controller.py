@@ -51,8 +51,14 @@ class OrderMenuController(QObject):         # QObject 상속 추가
         self.update_view()
 
     def handle_product_click(self, product_data: dict):
+        # [품절 상품 차단 방어 로직]
+        if product_data.get("is_sold_out", False):
+            print(f"[Controller] '{product_data.get('name')}' 상품은 품절 상태이므로 선택할 수 없습니다.")
+            return
+
         self.model.add_to_cart(product_data)
         self._refresh_cart_and_count()
+        
     def handle_change_qty(self, product_id: str, delta: int):
         """수량 변경 (+1, -1) 처리"""
         self.model.change_quantity(product_id, delta)

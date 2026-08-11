@@ -65,7 +65,7 @@ class PaymentMenuController(QObject):
         
         lines = []
         lines.append("============================================")
-        lines.append("            [ 아카데미 키오스크 영수증 ]           ")
+        lines.append("            [ 아카데미 주문 영수증 ]           ")
         lines.append("============================================")
         lines.append(f" 일시: {now_str}")
         lines.append(f" 결제 수단: {pay_type_names.get(pay_type, pay_type)}")

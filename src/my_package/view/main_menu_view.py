@@ -7,8 +7,11 @@ from ui.ui_main_menu import Ui_Form
 
 class MainMenuView(QWidget):
     #main_model = MainModel()  # MainModel 인스턴스 생성
-    # 로그인 시도 이벤트를 외부(Controller/Service)로 전송하는 Signal
+    #이벤트를 외부(Controller)로 전송하는 Signal
     start_requested = Signal(str)
+    on_ko_set_language= Signal(str)
+    on_jp_set_language= Signal(str)
+    on_en_set_language= Signal(str)
     #main_model = Signal(str)  # MainModel 인스턴스를 외부에서 주입받도록 변경
 
     def __init__(self, parent=None):
@@ -20,8 +23,20 @@ class MainMenuView(QWidget):
     def _init_ui(self):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
-        self.ui.btn_start_main_menu.clicked.connect(self._on_button_clicked)
-        
-        
-    def _on_button_clicked  (self):
+        # 버튼 별 시그널 슬롯 개별 연결
+        self.ui.btn_start_main_menu.clicked.connect(self._handle_start_clicked)
+        self.ui.btn_korean.clicked.connect(self._handle_korean_clicked)
+        self.ui.btn_japanese.clicked.connect(self._handle_japan_clicked)
+        self.ui.btn_english.clicked.connect(self._handle_english_clicked)
+
+    def _handle_start_clicked(self):
         self.start_requested.emit("주문하기 버튼 클릭됨")
+
+    def _handle_english_clicked(self):
+        self.on_en_set_language.emit("en")
+
+    def _handle_japan_clicked(self):
+        self.on_jp_set_language.emit("ja")
+
+    def _handle_korean_clicked(self):
+        self.on_ko_set_language.emit("ko")

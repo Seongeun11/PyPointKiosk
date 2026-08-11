@@ -52,7 +52,7 @@
       <string notr="true">background-color: transparent; border: none;</string>
      </property>
      <property name="text">
-      <string>아카데미 포인트 키오스크</string>
+      <string>아카데미 관리자전용 포스기 POS</string>
      </property>
     </widget>
    </item>

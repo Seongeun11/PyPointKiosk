@@ -1,34 +1,55 @@
+# src/my_package/model/receipt_repository_model.py
+
 import os
 import json
 from datetime import datetime
+from typing import Optional
+
 import openpyxl
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 class ReceiptRepositoryModel:
-    """영수증 JSON 저장(1~999) 및 엑셀 보고서 변환 비즈니스 Model"""
+    """
+    영수증 일자별 JSON 저장 및 엑셀 보고서 변환 비즈니스 Model
+    - 결제 내역을 날짜별 파일(receipts_YYYY-MM-DD.json)로 나누어 저장 관리
+    """
     
-    def __init__(self, json_path="resources/receipts.json", products_path="resources/products.json"):
+    def __init__(self, base_receipts_dir="resources/receipts", products_path="resources/products.json"):
         self.base_dir = os.path.dirname(os.path.dirname(__file__))
-        self.json_path = os.path.join(self.base_dir, json_path)
+        self.receipts_dir = os.path.join(self.base_dir, base_receipts_dir)
         self.products_path = os.path.join(self.base_dir, products_path)
-        self._ensure_file_exists()
+        
+        # 날짜별 영수증 폴더 생성
+        os.makedirs(self.receipts_dir, exist_ok=True)
 
-    def _ensure_file_exists(self):
-        os.makedirs(os.path.dirname(self.json_path), exist_ok=True)
-        if not os.path.exists(self.json_path):
-            with open(self.json_path, "w", encoding="utf-8") as f:
-                json.dump([], f, ensure_ascii=False, indent=2)
+    def _get_daily_file_path(self, date_str: str) -> str:
+        """지정한 날짜(YYYY-MM-DD) 또는 오늘 날짜의 JSON 파일 경로 반환"""
+        if not date_str:
+            date_str = datetime.now().strftime("%Y-%m-%d")
+        filename = f"receipts_{date_str}.json"
+        return os.path.join(self.receipts_dir, filename)
+
+    def _load_receipts_by_path(self, file_path: str) -> list:
+        """특정 경로의 JSON 영수증 파일 로드"""
+        if not os.path.exists(file_path):
+            return []
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[Model Error] 영수증 파일 읽기 실패 ({file_path}): {e}")
+            return []
 
     def add_receipt(self, pay_type: str, cart_items: list, purchase_amount: int, 
                     discount_type: str, discount_amount: int, final_amount: int) -> dict:
-        """결제 완료 시 영수증 데이터를 JSON 배열(1~999 순번)에 추가"""
-        try:
-            with open(self.json_path, "r", encoding="utf-8") as f:
-                receipts = json.load(f)
-        except Exception:
-            receipts = []
+        """결제 완료 시 당일 날짜 JSON 파일(receipts_YYYY-MM-DD.json)에 영수증 추가"""
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        daily_file_path = self._get_daily_file_path(today_str)
 
+        receipts = self._load_receipts_by_path(daily_file_path)
+
+        # 당일 결제 건수 기준 순번 (1 ~ 999)
         next_id = (len(receipts) % 999) + 1
 
         receipt_data = {
@@ -44,45 +65,74 @@ class ReceiptRepositoryModel:
 
         receipts.append(receipt_data)
 
-        with open(self.json_path, "w", encoding="utf-8") as f:
-            json.dump(receipts, f, ensure_ascii=False, indent=2)
+        # 일자별 JSON 파일에 저장
+        try:
+            with open(daily_file_path, "w", encoding="utf-8") as f:
+                json.dump(receipts, f, ensure_ascii=False, indent=2)
+                print(f"[Model] 영수증 저장 완료: {daily_file_path} (총 {len(receipts)}건)")
+        except Exception as e:
+            print(f"[Model Error] 영수증 저장 실패: {e}")
 
         return receipt_data
 
-    def get_all_receipts(self) -> list:
-        try:
-            with open(self.json_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return []
+    def get_receipts_by_date(self, date_str: str) -> list:
+        """특정 날짜(YYYY-MM-DD)의 영수증 목록 조회 (기본값: 오늘)"""
+        file_path = self._get_daily_file_path(date_str)
+        return self._load_receipts_by_path(file_path)
 
-    def export_to_excel(self, export_file_path: str) -> bool:
-        """JSON 영수증 집계 데이터를 일일 판매 보고서 양식 엑셀 파일로 출력"""
-        receipts = self.get_all_receipts()
+    def get_all_receipts(self) -> list:
+        """모든 날짜의 영수증 목록을 병합하여 조회"""
+        all_receipts = []
+        if os.path.exists(self.receipts_dir):
+            for filename in sorted(os.listdir(self.receipts_dir)):
+                if filename.startswith("receipts_") and filename.endswith(".json"):
+                    path = os.path.join(self.receipts_dir, filename)
+                    all_receipts.extend(self._load_receipts_by_path(path))
+        return all_receipts
+
+    def export_to_excel(self, export_file_path: str, target_date: Optional[str] = None) -> bool:
+        """
+        [개선된 로직]
+        - A열에 카테고리명을 추가하여 카테고리별 노출/판매 정도 통계 작성 가능
+        - 모든 열과 엑셀 계산 수식을 A열 추가에 맞춰 1열씩 이동하여 동기화
+        """
+        if not target_date:
+            target_date = datetime.now().strftime("%Y-%m-%d")
+
+        receipts = self.get_receipts_by_date(target_date)
         
-        products_data = []
+        # 1. products.json으로부터 Master ID 및 카테고리 정보 로드
+        stats = {}
         if os.path.exists(self.products_path):
-            with open(self.products_path, "r", encoding="utf-8") as f:
-                cat_data = json.load(f).get("categories", [])
-                for cat in cat_data:
-                    c_name = cat.get("name", "")
-                    for p in cat.get("products", []):
-                        products_data.append({
-                            "category": c_name,
-                            "name": p.get("name", ""),
-                            "price": p.get("price", 0)
-                        })
+            try:
+                with open(self.products_path, "r", encoding="utf-8") as f:
+                    cat_data = json.load(f).get("categories", [])
+                    for cat in cat_data:
+                        c_name = cat.get("name", "미지정")
+                        for p in cat.get("products", []):
+                            prod_id = str(p.get("id"))
+                            stats[prod_id] = {
+                                "id": prod_id,
+                                "name": p.get("name", ""),
+                                "category": c_name,
+                                "price": p.get("price", 0),
+                                "disc_cash": 0, "disc_bank": 0,
+                                "norm_cash": 0, "norm_bank": 0,
+                                "acad_cash": 0, "acad_bank": 0,
+                                "point_qty": 0, "total_qty": 0
+                            }
+            except Exception as e:
+                print(f"[Model Error] 상품 목록 로드 실패: {e}")
 
         wb = openpyxl.Workbook()
         ws = wb.active
 
-        # Pylance 타입 에러 방지 (Type Guard)
         if ws is None or not isinstance(ws, Worksheet):
             ws = wb.create_sheet(title="일일 판매 보고서")
         else:
             ws.title = "일일 판매 보고서"
 
-        # 스타일 정의
+        # 서식 및 스타일 정의
         font_title = Font(name="맑은 고딕", size=14, bold=True)
         font_header = Font(name="맑은 고딕", size=9, bold=True)
         
@@ -96,30 +146,41 @@ class ReceiptRepositoryModel:
         align_center = Alignment(horizontal='center', vertical='center', wrap_text=True)
         align_right = Alignment(horizontal='right', vertical='center')
 
-        # 1. 헤더 생성 (1~3행)
-        ws.merge_cells("A1:N2")
+        # 엑셀 타이틀 헤더 (A열 추가로 인한 전체 열 영역: A~S열 총 19개)
+        ws.merge_cells("A1:O2")
         ws["A1"].value = "만물복귀 카페팀 일일 판매 보고서"
         ws["A1"].font = font_title
         ws["A1"].fill = fill_title
         ws["A1"].alignment = align_center
 
-        ws.merge_cells("O1:R2")
-        ws["O1"].value = datetime.now().strftime("%Y. %m. %d")
-        ws["O1"].font = font_title
-        ws["O1"].fill = fill_title
-        ws["O1"].alignment = align_center
+        ws.merge_cells("P1:S2")
+        formatted_date = datetime.strptime(target_date, "%Y-%m-%d").strftime("%Y. %m. %d")
+        ws["P1"].value = formatted_date
+        ws["P1"].font = font_title
+        ws["P1"].fill = fill_title
+        ws["P1"].alignment = align_center
 
+        # Row 3 메인 헤더 정의 (A3: 카테고리 추가)
         headers_row3 = [
-            ("A3", "품목"), ("B3", "가격표"), ("F3", "할인가"), ("H3", "일반가"), 
-            ("J3", "아카데미"), ("L3", "엔화"), ("M3", "엔화 합계"), 
-            ("N3", "현금 합계"), ("O3", "계좌 합계"), ("P3", "총 합계"), 
-            ("Q3", "아카데미 포인트"), ("R3", "총 판매량")
+            ("A3", "카테고리"), ("B3", "품목"), ("C3", "가격표"), ("G3", "할인가"), 
+            ("I3", "일반가"), ("K3", "아카데미"), ("M3", "엔화"), ("N3", "엔화 합계"), 
+            ("O3", "현금 합계"), ("P3", "계좌 합계"), ("Q3", "총 합계"), 
+            ("R3", "아카데미 포인트"), ("S3", "총 판매량")
         ]
         
-        ws.merge_cells("B3:E3")
-        ws.merge_cells("F3:G3")
-        ws.merge_cells("H3:I3")
-        ws.merge_cells("J3:K3")
+        ws.merge_cells("A3:A4")
+        ws.merge_cells("B3:B4")
+        ws.merge_cells("C3:F3")
+        ws.merge_cells("G3:H3")
+        ws.merge_cells("I3:J3")
+        ws.merge_cells("K3:L3")
+        ws.merge_cells("M3:M4")
+        ws.merge_cells("N3:N4")
+        ws.merge_cells("O3:O4")
+        ws.merge_cells("P3:P4")
+        ws.merge_cells("Q3:Q4")
+        ws.merge_cells("R3:R4")
+        ws.merge_cells("S3:S4")
 
         for cell_ref, text in headers_row3:
             ws[cell_ref].value = text
@@ -127,11 +188,11 @@ class ReceiptRepositoryModel:
             ws[cell_ref].alignment = align_center
             ws[cell_ref].fill = fill_sub_title
 
-        # 서브 헤더 (4행)
+        # Row 4 서브 헤더 정의 (각 1칸씩 우측으로 이동)
         sub_headers = {
-            "B4": "할인", "C4": "원", "D4": "아카데미", "E4": "엔",
-            "F4": "현금", "G4": "계좌", "H4": "현금", "I4": "계좌",
-            "J4": "현금", "K4": "계좌"
+            "C4": "할인", "D4": "원", "E4": "아카데미", "F4": "엔",
+            "G4": "현금", "H4": "계좌", "I4": "현금", "J4": "계좌",
+            "K4": "현금", "L4": "계좌"
         }
         for cell_ref, text in sub_headers.items():
             ws[cell_ref].value = text
@@ -139,39 +200,30 @@ class ReceiptRepositoryModel:
             ws[cell_ref].alignment = align_center
             ws[cell_ref].fill = fill_sub_title
 
-        # 2. 데이터 집계 계산
-        stats = {}
-        for p in products_data:
-            p_name = p["name"]
-            stats[p_name] = {
-                "category": p["category"],
-                "price": p["price"],
-                "disc_cash": 0, "disc_bank": 0,
-                "norm_cash": 0, "norm_bank": 0,
-                "acad_cash": 0, "acad_bank": 0,
-                "point_qty": 0,
-                "total_qty": 0
-            }
-
+        # 2. 영수증 내역 집계 (ID 기준으로 분리)
         for r in receipts:
             p_type = r.get("pay_type")
             d_type = r.get("discount_type")
             items = r.get("items", [])
 
             for item in items:
-                name = item.get("name")
+                prod_id = str(item.get("id", item.get("name")))
+                name = item.get("name", "미등록상품")
                 qty = item.get("quantity", 0)
 
-                if name not in stats:
-                    stats[name] = {
-                        "category": "기타", "price": item.get("price", 0),
+                if prod_id not in stats:
+                    stats[prod_id] = {
+                        "id": prod_id,
+                        "name": name,
+                        "category": "기타", 
+                        "price": item.get("price", 0),
                         "disc_cash": 0, "disc_bank": 0,
                         "norm_cash": 0, "norm_bank": 0,
                         "acad_cash": 0, "acad_bank": 0,
                         "point_qty": 0, "total_qty": 0
                     }
 
-                st = stats[name]
+                st = stats[prod_id]
                 st["total_qty"] += qty
 
                 if p_type == "point":
@@ -186,44 +238,66 @@ class ReceiptRepositoryModel:
                     if p_type == "cash": st["norm_cash"] += qty
                     elif p_type == "bank": st["norm_bank"] += qty
 
-        # 3. 데이터 엑셀 행 채우기 (5행부터)
+        # 3. 엑셀 셀 채우기 (A열: 카테고리, B열: 품목 ...)
         row_idx = 5
-        for name, data in stats.items():
+        for prod_id, data in stats.items():
+            category = data.get("category", "기타")
+            name = data["name"]
             price = data["price"]
             disc_price = int(price * 0.9)
             acad_price = int(price * 0.85)
 
-            ws.cell(row=row_idx, column=1, value=name)
-            ws.cell(row=row_idx, column=2, value=f"₩{disc_price:,}")
-            ws.cell(row=row_idx, column=3, value=f"₩{price:,}")
-            ws.cell(row=row_idx, column=4, value=f"₩{acad_price:,}")
-            ws.cell(row=row_idx, column=5, value=f"¥{int(price/10)}")
+            # Col 1: 카테고리
+            ws.cell(row=row_idx, column=1, value=category)
+            # Col 2: 품목
+            ws.cell(row=row_idx, column=2, value=name)
+            
+            # Col 3~6: 가격표 (할인가, 원화, 아카데미가, 엔화)
+            ws.cell(row=row_idx, column=3, value=f"₩{disc_price:,}")
+            ws.cell(row=row_idx, column=4, value=f"₩{price:,}")
+            ws.cell(row=row_idx, column=5, value=f"₩{acad_price:,}")
+            ws.cell(row=row_idx, column=6, value=f"¥{int(price/10)}")
 
-            ws.cell(row=row_idx, column=6, value=data["disc_cash"] or "")
-            ws.cell(row=row_idx, column=7, value=data["disc_bank"] or "")
-            ws.cell(row=row_idx, column=8, value=data["norm_cash"] or "")
-            ws.cell(row=row_idx, column=9, value=data["norm_bank"] or "")
-            ws.cell(row=row_idx, column=10, value=data["acad_cash"] or "")
-            ws.cell(row=row_idx, column=11, value=data["acad_bank"] or "")
-            ws.cell(row=row_idx, column=12, value="")
+            # Col 7~12: 수량 집계 (할인 현금/계좌, 일반 현금/계좌, 아카데미 현금/계좌)
+            ws.cell(row=row_idx, column=7, value=data["disc_cash"] or "")
+            ws.cell(row=row_idx, column=8, value=data["disc_bank"] or "")
+            ws.cell(row=row_idx, column=9, value=data["norm_cash"] or "")
+            ws.cell(row=row_idx, column=10, value=data["norm_bank"] or "")
+            ws.cell(row=row_idx, column=11, value=data["acad_cash"] or "")
+            ws.cell(row=row_idx, column=12, value=data["acad_bank"] or "")
+            ws.cell(row=row_idx, column=13, value="") # 엔화 결제 수량 칸
 
-            ws.cell(row=row_idx, column=13, value=f"=L{row_idx}*E{row_idx}")
-            ws.cell(row=row_idx, column=14, value=f"=(F{row_idx}*{disc_price})+(H{row_idx}*{price})+(J{row_idx}*{acad_price})")
+            # Col 14~19: 수식 계산 (1열씩 이동된 수식 적용)
+            # N열(14): 엔화 합계 = M열 * F열
+            ws.cell(row=row_idx, column=14, value=f"=M{row_idx}*F{row_idx}")
+            # O열(15): 현금 합계
             ws.cell(row=row_idx, column=15, value=f"=(G{row_idx}*{disc_price})+(I{row_idx}*{price})+(K{row_idx}*{acad_price})")
-            ws.cell(row=row_idx, column=16, value=f"=N{row_idx}+O{row_idx}")
+            # P열(16): 계좌 합계
+            ws.cell(row=row_idx, column=16, value=f"=(H{row_idx}*{disc_price})+(J{row_idx}*{price})+(L{row_idx}*{acad_price})")
+            # Q열(17): 총 합계 = O열 + P열
+            ws.cell(row=row_idx, column=17, value=f"=O{row_idx}+P{row_idx}")
 
-            ws.cell(row=row_idx, column=17, value=data["point_qty"] or "")
-            ws.cell(row=row_idx, column=18, value=f"=SUM(F{row_idx}:L{row_idx})+Q{row_idx}")
+            # R열(18): 포인트 수량
+            ws.cell(row=row_idx, column=18, value=data["point_qty"] or "")
+            # S열(19): 총 판매량 = SUM(G:M) + R
+            ws.cell(row=row_idx, column=19, value=f"=SUM(G{row_idx}:M{row_idx})+R{row_idx}")
 
             row_idx += 1
 
-        # 전체 테두리 적용 및 정렬
+        # 테두리 및 정렬 서식 적용 (1~19열 대상)
         for r in range(1, row_idx):
-            for c in range(1, 19):
+            for c in range(1, 20):
                 cell = ws.cell(row=r, column=c)
                 cell.border = thin_border
-                if r >= 5 and c not in [1, 2, 3, 4, 5]:
-                    cell.alignment = align_center if c <= 12 or c in [17, 18] else align_right
+                if r >= 5:
+                    if c in [1, 2]: # 카테고리, 품목
+                        cell.alignment = Alignment(horizontal='left', vertical='center')
+                    elif c in range(3, 7): # 가격표
+                        cell.alignment = align_right
+                    elif c <= 13 or c in [18, 19]: # 수량 관련 항목
+                        cell.alignment = align_center
+                    else: # 금액 계산 항목
+                        cell.alignment = align_right
 
         wb.save(export_file_path)
         return True

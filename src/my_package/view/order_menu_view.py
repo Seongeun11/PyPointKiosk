@@ -383,7 +383,10 @@ class OrderMenuView(QWidget):
         btn.setFixedHeight(height)
         btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
 
-        # 1. 상품명 자동 줄바꿈 처리
+        # 1. 품절 여부 확인
+        is_sold_out = product_data.get("is_sold_out", False)
+
+        # 2. 상품명 자동 줄바꿈 및 품절 문구 추가
         name = str(product_data.get('name', ''))
         if len(name) > 6 and ' ' not in name:
             mid = len(name) // 2
@@ -392,15 +395,23 @@ class OrderMenuView(QWidget):
             formatted_name = name
 
         formatted_price = f"{product_data['price']:,}원"
-        btn.setText(f"{formatted_name}\n{formatted_price}")
+        
+        if is_sold_out:
+            btn.setText(f"[품절]\n{formatted_name}")
+        else:
+            btn.setText(f"{formatted_name}\n{formatted_price}")
 
+        # 이미지 설정
         img_path = product_data.get("image_abs_path", "")
         if img_path and os.path.exists(img_path):
             btn.setIcon(QIcon(img_path))
         else:
             btn.setIcon(self._get_placeholder_icon())
 
-        # 2. 버튼 스타일시트
+        # 3. 품절 버튼 비활성화 처리 (클릭 금지)
+        btn.setEnabled(not is_sold_out)
+
+        # 4. 버튼 스타일시트 (disabled 상태 스타일 추가)
         btn.setStyleSheet("""
             QToolButton {
                 border: 1px solid #CCCCCC;
@@ -416,6 +427,11 @@ class OrderMenuView(QWidget):
             }
             QToolButton:pressed {
                 background-color: #E0E0E0;
+            }
+            QToolButton:disabled {
+                border: 1px solid #AAAAAA;
+                background-color: #EFEFEF;
+                color: #888888;
             }
         """)
 

@@ -37,7 +37,7 @@ class MainController(QMainWindow):
 
     def _init_window(self):
         """초기 창 설정 (로그인 화면 스펙)"""
-        self.setWindowTitle("아카데미 결제 키오스크 - 로그인")
+        self.setWindowTitle("아카데미 관리자전용 포스기 - 로그인")
 
     def _init_views(self):
         """화면 전환용 StackedWidget 설정 및 로그인 컨트롤러 연동"""
@@ -84,7 +84,7 @@ class MainController(QMainWindow):
             self.stack.addWidget(self.main_menu_view)
 
         # UI 업데이트 및 화면 전환
-        self.setWindowTitle("아카데미 결제 키오스크 - 메인메뉴")
+        self.setWindowTitle("아카데미 관리자전용 포스기 - 메인메뉴")
         self.stack.setCurrentWidget(self.main_menu_view)
 
     def switch_to_order_menu(self):
@@ -103,7 +103,7 @@ class MainController(QMainWindow):
             
             self.stack.addWidget(self.order_menu_view)
 
-        self.setWindowTitle("아카데미 결제 키오스크 - 주문하기")
+        self.setWindowTitle("아카데미 관리자전용 포스기 - 주문하기")
         self.stack.setCurrentWidget(self.order_menu_view)
 
 
@@ -133,7 +133,7 @@ class MainController(QMainWindow):
         # [핵심] 장바구니 목록과 총 금액을 함께 전달
         self.payment_menu_controller.init_payment_data(cart_items, total_price)
 
-        self.setWindowTitle("아카데미 결제 키오스크 - 결제하기")
+        self.setWindowTitle("아카데미 관리자전용 포스기 - 결제하기")
         self.stack.setCurrentWidget(self.payment_menu_view)
     
     def on_payment_finished(self, receipt_text: str):
@@ -170,7 +170,7 @@ class MainController(QMainWindow):
         # 뷰에 영수증 텍스트 전달
         self.receipt_menu_controller.set_receipt_text(receipt_text)
 
-        self.setWindowTitle("아카데미 결제 키오스크 - 결제 완료")
+        self.setWindowTitle("아카데미 관리자전용 포스기 - 결제 완료")
         self.stack.setCurrentWidget(self.receipt_menu_view)
 
     def on_receipt_confirmed(self):

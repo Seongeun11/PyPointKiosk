@@ -182,7 +182,7 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
-        self.btn_title.setText(QCoreApplication.translate("Form", u"\uc544\uce74\ub370\ubbf8 \ud3ec\uc778\ud2b8 \ud0a4\uc624\uc2a4\ud06c", None))
+        self.btn_title.setText(QCoreApplication.translate("Form", u"\uc544\uce74\ub370\ubbf8 \uad00\ub9ac\uc790\uc804\uc6a9 \ud3ec\uc2a4\uae30 POS", None))
 
         __sortingEnabled = self.lst_my_order_details.isSortingEnabled()
         self.lst_my_order_details.setSortingEnabled(False)
