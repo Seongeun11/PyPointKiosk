@@ -32,6 +32,7 @@ class MainController(QMainWindow):
     """
     def __init__(self):
         super().__init__()
+        self.selected_lang: str = "ko"  # [추가] 글로벌 언어 상태 (기본값: 'ko')
         self._init_window()
         self._init_views()
 
@@ -58,10 +59,7 @@ class MainController(QMainWindow):
             QMessageBox.critical(self, "오류", "인증 세션을 찾을 수 없습니다.")
             return
 
-        # 2. 창 크기 잠금 해제 및 확장
-        self.setMinimumSize(0, 0)
-        self.setMaximumSize(16777215, 16777215)
-        #self.resize(1280, 720)
+       
 
         # 3. 메인 메뉴 화면(MainMenu)으로 이동
         self.switch_to_main_menu()
@@ -81,11 +79,25 @@ class MainController(QMainWindow):
                 self.switch_to_order_menu
             )
             
+
+            # [핵심 추가] 언어 변경 요청 시그널 연결
+            self.main_menu_controller.language_changed_signal.connect(
+                self.on_language_changed
+            )
+            
             self.stack.addWidget(self.main_menu_view)
 
         # UI 업데이트 및 화면 전환
         self.setWindowTitle("아카데미 관리자전용 포스기 - 메인메뉴")
         self.stack.setCurrentWidget(self.main_menu_view)
+
+    def on_language_changed(self, lang: str):
+        """[신규] 메인 메뉴에서 언어 변경 시 호출되는 핸들러"""
+        self.selected_lang = lang
+        
+        # OrderMenuController가 이미 인스턴스화되어 있다면 즉시 언어 적용 및 View 갱신
+        if hasattr(self, 'order_menu_controller'):
+            self.order_menu_controller.set_language(lang)
 
     def switch_to_order_menu(self):
         if not hasattr(self, 'order_menu_view'):
@@ -100,9 +112,14 @@ class MainController(QMainWindow):
             self.order_menu_controller.pay_requested_signal.connect(
                 self.switch_to_payment_menu
             )
+            # [핵심 추가] 주문 화면에서 뒤로가기 요청 시 메인 메뉴 화면으로 전환
+            self.order_menu_controller.go_back_requested_signal.connect(
+                self.switch_to_main_menu
+            )            
             
             self.stack.addWidget(self.order_menu_view)
-
+        # [핵심 추가] 주문 화면으로 전환될 때 현재 저장된 언어 설정 적용
+        self.order_menu_controller.set_language(self.selected_lang)
         self.setWindowTitle("아카데미 관리자전용 포스기 - 주문하기")
         self.stack.setCurrentWidget(self.order_menu_view)
 
@@ -127,7 +144,10 @@ class MainController(QMainWindow):
             self.payment_menu_controller.payment_completed_signal.connect(
                 self.on_payment_finished
             )
-            
+            # [핵심 추가] 결제 화면에서 뒤로가기 요청 시 메인 메뉴 화면으로 전환
+            self.payment_menu_controller.go_back_requested_signal.connect(
+                self.switch_to_order_menu
+            )             
             self.stack.addWidget(self.payment_menu_view)
 
         # [핵심] 장바구니 목록과 총 금액을 함께 전달

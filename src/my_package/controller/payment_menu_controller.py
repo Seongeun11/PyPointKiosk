@@ -1,10 +1,11 @@
 #src\my_package\controller\payment_menu_controller.py
 from PySide6.QtCore import QObject, Signal
 from datetime import datetime
-from model.receipt_repository_model import ReceiptRepositoryModel
+from repositories.excel_receipt_repository import ReceiptRepositoryModel
 
 class PaymentMenuController(QObject):
     payment_completed_signal = Signal(str) # 결제 완료 시 상위 컨트롤러 알림
+    go_back_requested_signal = Signal(str)
 
     def __init__(self, model, view):
         super().__init__()
@@ -13,8 +14,9 @@ class PaymentMenuController(QObject):
         self.receipt_repo = ReceiptRepositoryModel() # [추가] 영수증 저장소 모델
 
         # View 시그널 연결
-        self.view.discount_requested.connect(self.handle_discount)
-        self.view.pay_type_requested.connect(self.handle_payment)
+        self.view.discount_requested_signal.connect(self.handle_discount)
+        self.view.pay_type_requested_signal.connect(self.handle_payment)
+        self.view.view_go_back_requested_signal.connect(self.handle_go_back)
 
     def init_payment_data(self, cart_items: list, total_price: int):
         """화면 진입 시 장바구니/금액 데이터 초기화 및 UI 리프레시"""
@@ -47,6 +49,11 @@ class PaymentMenuController(QObject):
 
         receipt_text = self.generate_receipt_text(pay_type)
         self.payment_completed_signal.emit(receipt_text)
+
+    def handle_go_back(self):
+        #main_controller 뒤로가기 시그널 연결
+        self.go_back_requested_signal.emit("goback")
+        
 
     def generate_receipt_text(self, pay_type: str) -> str:
         """영수증 포맷 텍스트 생성 로직"""

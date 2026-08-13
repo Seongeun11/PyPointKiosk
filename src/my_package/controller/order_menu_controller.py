@@ -5,6 +5,7 @@ from view.admin_menu_dialog_view import AdminMenuDialogView  # QObject, Signal �
 
 class OrderMenuController(QObject):         # QObject 상속 추가
     pay_requested_signal = Signal(list, int)      # [추가] 결제 요청 시그널 (파라미터: cart_items 목록, 총금액)
+    go_back_requested_signal = Signal()
     def __init__(self, model, view):
         super().__init__()
         self.model = model
@@ -22,8 +23,14 @@ class OrderMenuController(QObject):         # QObject 상속 추가
         # [신규 추가] 수량 변경 및 단일 항목 삭제 핸들러 바인딩
         self.view.change_qty_signal.connect(self.handle_change_qty)
         self.view.remove_item_signal.connect(self.handle_remove_item)
-
+        #뒤로가기 핸들러
+        self.view.orderview_on_go_back_signal.connect(self.handle_go_back)
         # 초기 화면 업데이트
+        self.update_view()
+
+    def set_language(self, lang: str):
+        """[신규] 언어를 변경하고 뷰를 즉시 동기화"""
+        self.model.set_language(lang)
         self.update_view()
 
     def update_view(self):
@@ -98,3 +105,11 @@ class OrderMenuController(QObject):         # QObject 상속 추가
         # View 업데이트 요청
         self.view.update_cart_view(cart_items, total_price)
         self.view.update_product_count_view(total_count)
+
+    def handle_go_back(self):
+        self.model.on_view_go_back("order_view_goback")
+        self.model.clear_cart()
+        self._refresh_cart_and_count()
+        
+        # Root Controller로 화면 전환 요청 전달
+        self.go_back_requested_signal.emit()

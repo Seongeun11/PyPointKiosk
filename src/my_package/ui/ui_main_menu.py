@@ -22,13 +22,13 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(720, 1280)
+        Form.resize(720, 720)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
         Form.setSizePolicy(sizePolicy)
-        Form.setMinimumSize(QSize(720, 1280))
+        Form.setMinimumSize(QSize(720, 720))
         self.verticalLayout_4 = QVBoxLayout(Form)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.verticalLayout_2 = QVBoxLayout()
@@ -92,10 +92,12 @@ class Ui_Form(object):
 
         self.btn_english = QPushButton(Form)
         self.btn_english.setObjectName(u"btn_english")
+        self.btn_english.setEnabled(False)
         sizePolicy.setHeightForWidth(self.btn_english.sizePolicy().hasHeightForWidth())
         self.btn_english.setSizePolicy(sizePolicy)
         self.btn_english.setFont(font1)
         self.btn_english.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.btn_english.setCheckable(False)
 
         self.gridLayout.addWidget(self.btn_english, 0, 2, 1, 1)
 

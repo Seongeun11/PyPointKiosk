@@ -17,9 +17,6 @@ class OrderMenuModel:
         #절대 경로(self.json_path)를 Repository에 전달
         self.repository = MenuJsonRepository(self.base_dir, self.json_path)
 
-       
-
-
         self.categories: list = []
         self.current_category_idx: int = 0
         self.current_lang:str = "ko"  # 기본 언어: 'ko' (한국어/KRW), 'ja' (일본어/JPY)
@@ -225,7 +222,11 @@ class OrderMenuModel:
             p_display = dict(p)  # 원본 딕셔너리 복사 (name_ja, price_jpy 등 원본 필드 유지)
             p_display["display_name"] = name
             p_display["display_price"] = price
-            p_display["price_str"] = f"¥{price:,}" if is_ja else f"{price:,}원"
+
+            if is_ja:
+                p_display["price_str"] = f"{price:,}¥"  
+            else:
+                p_display["price_str"] =f"{price:,}원"
             display_products.append(p_display)
 
         return display_products
@@ -288,3 +289,6 @@ class OrderMenuModel:
     def get_total_price(self) -> int:
         """현재 선택된 언어/통화 기준의 장바구니 총 금액 합계"""
         return sum(item["total_price"] for item in self.get_cart_items())
+
+    def on_view_go_back(self,message:str):
+        print(message)

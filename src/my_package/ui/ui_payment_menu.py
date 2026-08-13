@@ -22,13 +22,13 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(720, 1280)
+        Form.resize(720, 720)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
         Form.setSizePolicy(sizePolicy)
-        Form.setMinimumSize(QSize(720, 1280))
+        Form.setMinimumSize(QSize(720, 720))
         font = QFont()
         font.setPointSize(20)
         Form.setFont(font)
@@ -36,29 +36,6 @@ class Ui_Form(object):
         self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(8, 8, 8, 8)
-        self.verticalLayout_4 = QVBoxLayout()
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.le_title = QLineEdit(Form)
-        self.le_title.setObjectName(u"le_title")
-        sizePolicy.setHeightForWidth(self.le_title.sizePolicy().hasHeightForWidth())
-        self.le_title.setSizePolicy(sizePolicy)
-        font1 = QFont()
-        font1.setPointSize(20)
-        font1.setHintingPreference(QFont.PreferDefaultHinting)
-        self.le_title.setFont(font1)
-        self.le_title.setCursor(QCursor(Qt.CursorShape.BlankCursor))
-        self.le_title.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.le_title.setToolTipDuration(0)
-        self.le_title.setStyleSheet(u"background-color: transparent; color: red;")
-        self.le_title.setFrame(False)
-        self.le_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.le_title.setReadOnly(True)
-
-        self.verticalLayout_4.addWidget(self.le_title)
-
-
-        self.verticalLayout.addLayout(self.verticalLayout_4)
-
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
@@ -119,6 +96,9 @@ class Ui_Form(object):
         self.lineEdit_2.setObjectName(u"lineEdit_2")
         sizePolicy2.setHeightForWidth(self.lineEdit_2.sizePolicy().hasHeightForWidth())
         self.lineEdit_2.setSizePolicy(sizePolicy2)
+        font1 = QFont()
+        font1.setPointSize(20)
+        font1.setHintingPreference(QFont.PreferDefaultHinting)
         self.lineEdit_2.setFont(font1)
         self.lineEdit_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.lineEdit_2.setStyleSheet(u"background-color: transparent;")
@@ -169,30 +149,6 @@ class Ui_Form(object):
         self.gridLayout_2 = QGridLayout()
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.le_payment_amount = QLineEdit(Form)
-        self.le_payment_amount.setObjectName(u"le_payment_amount")
-        sizePolicy1.setHeightForWidth(self.le_payment_amount.sizePolicy().hasHeightForWidth())
-        self.le_payment_amount.setSizePolicy(sizePolicy1)
-        self.le_payment_amount.setFont(font)
-        self.le_payment_amount.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.le_payment_amount.setFrame(False)
-        self.le_payment_amount.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.le_payment_amount.setReadOnly(True)
-
-        self.gridLayout_2.addWidget(self.le_payment_amount, 2, 0, 1, 1)
-
-        self.le_discount_amount = QLineEdit(Form)
-        self.le_discount_amount.setObjectName(u"le_discount_amount")
-        sizePolicy1.setHeightForWidth(self.le_discount_amount.sizePolicy().hasHeightForWidth())
-        self.le_discount_amount.setSizePolicy(sizePolicy1)
-        self.le_discount_amount.setFont(font)
-        self.le_discount_amount.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.le_discount_amount.setFrame(False)
-        self.le_discount_amount.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.le_discount_amount.setReadOnly(True)
-
-        self.gridLayout_2.addWidget(self.le_discount_amount, 1, 0, 1, 1)
-
         self.le_discount_amount_num = QLineEdit(Form)
         self.le_discount_amount_num.setObjectName(u"le_discount_amount_num")
         sizePolicy1.setHeightForWidth(self.le_discount_amount_num.sizePolicy().hasHeightForWidth())
@@ -204,16 +160,17 @@ class Ui_Form(object):
 
         self.gridLayout_2.addWidget(self.le_discount_amount_num, 1, 1, 1, 1)
 
-        self.le_payment_amount_num = QLineEdit(Form)
-        self.le_payment_amount_num.setObjectName(u"le_payment_amount_num")
-        sizePolicy1.setHeightForWidth(self.le_payment_amount_num.sizePolicy().hasHeightForWidth())
-        self.le_payment_amount_num.setSizePolicy(sizePolicy1)
-        self.le_payment_amount_num.setFont(font)
-        self.le_payment_amount_num.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.le_payment_amount_num.setFrame(False)
-        self.le_payment_amount_num.setReadOnly(True)
+        self.le_payment_amount = QLineEdit(Form)
+        self.le_payment_amount.setObjectName(u"le_payment_amount")
+        sizePolicy1.setHeightForWidth(self.le_payment_amount.sizePolicy().hasHeightForWidth())
+        self.le_payment_amount.setSizePolicy(sizePolicy1)
+        self.le_payment_amount.setFont(font)
+        self.le_payment_amount.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.le_payment_amount.setFrame(False)
+        self.le_payment_amount.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.le_payment_amount.setReadOnly(True)
 
-        self.gridLayout_2.addWidget(self.le_payment_amount_num, 2, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.le_payment_amount, 2, 0, 1, 1)
 
         self.le_purchase_amount_num = QLineEdit(Form)
         self.le_purchase_amount_num.setObjectName(u"le_purchase_amount_num")
@@ -239,10 +196,43 @@ class Ui_Form(object):
 
         self.gridLayout_2.addWidget(self.le_purchase_amount, 0, 0, 1, 1)
 
+        self.le_payment_amount_num = QLineEdit(Form)
+        self.le_payment_amount_num.setObjectName(u"le_payment_amount_num")
+        sizePolicy1.setHeightForWidth(self.le_payment_amount_num.sizePolicy().hasHeightForWidth())
+        self.le_payment_amount_num.setSizePolicy(sizePolicy1)
+        self.le_payment_amount_num.setFont(font)
+        self.le_payment_amount_num.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.le_payment_amount_num.setFrame(False)
+        self.le_payment_amount_num.setReadOnly(True)
+
+        self.gridLayout_2.addWidget(self.le_payment_amount_num, 2, 1, 1, 1)
+
+        self.le_discount_amount = QLineEdit(Form)
+        self.le_discount_amount.setObjectName(u"le_discount_amount")
+        sizePolicy1.setHeightForWidth(self.le_discount_amount.sizePolicy().hasHeightForWidth())
+        self.le_discount_amount.setSizePolicy(sizePolicy1)
+        self.le_discount_amount.setFont(font)
+        self.le_discount_amount.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.le_discount_amount.setFrame(False)
+        self.le_discount_amount.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.le_discount_amount.setReadOnly(True)
+
+        self.gridLayout_2.addWidget(self.le_discount_amount, 1, 0, 1, 1)
+
+        self.btn_back = QPushButton(Form)
+        self.btn_back.setObjectName(u"btn_back")
+        sizePolicy.setHeightForWidth(self.btn_back.sizePolicy().hasHeightForWidth())
+        self.btn_back.setSizePolicy(sizePolicy)
+        font2 = QFont()
+        font2.setPointSize(30)
+        self.btn_back.setFont(font2)
+
+        self.gridLayout_2.addWidget(self.btn_back, 3, 0, 1, 2)
+
 
         self.verticalLayout.addLayout(self.gridLayout_2)
 
-        self.verticalLayout.setStretch(0, 1)
+        self.verticalLayout.setStretch(0, 2)
         self.verticalLayout.setStretch(1, 2)
         self.verticalLayout.setStretch(2, 2)
 
@@ -253,7 +243,6 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
-        self.le_title.setText(QCoreApplication.translate("Form", u"\uacb0\uc81c \uc218\ub2e8\uc744 \uc120\ud0dd\ud574\uc8fc\uc138\uc694", None))
         self.btn_student_discount.setText(QCoreApplication.translate("Form", u"\uc218\ub828\uc0dd \ud560\uc778", None))
         self.le_academy_discount.setText(QCoreApplication.translate("Form", u"\uc544\uce74\ub370\ubbf8 \ud560\uc778", None))
         self.lineEdit_3.setText(QCoreApplication.translate("Form", u"\ub450\ubc88 \ud074\ub9ad\ud558\uba74 \ud560\uc778\uc774 \ucde8\uc18c\ub429\ub2c8\ub2e4.", None))
@@ -263,13 +252,14 @@ class Ui_Form(object):
         self.btn_cash_payment.setText(QCoreApplication.translate("Form", u"\ud604\uae08 \uacb0\uc81c", None))
         self.btn_academy_point_payment.setText(QCoreApplication.translate("Form", u"\uc544\uce74\ub370\ubbf8 \ud3ec\uc778\ud2b8", None))
         self.lineEdit.setText(QCoreApplication.translate("Form", u"\uacb0\uc81c \uc218\ub2e8\uc744 \uc120\ud0dd\ud574\uc8fc\uc138\uc694", None))
+        self.le_discount_amount_num.setStyleSheet(QCoreApplication.translate("Form", u"background-color: transparent;", None))
         self.le_payment_amount.setStyleSheet(QCoreApplication.translate("Form", u"background-color: transparent;", None))
         self.le_payment_amount.setText(QCoreApplication.translate("Form", u"\uacb0\uc81c \uae08\uc561", None))
-        self.le_discount_amount.setStyleSheet(QCoreApplication.translate("Form", u"background-color: transparent;", None))
-        self.le_discount_amount.setText(QCoreApplication.translate("Form", u"\ud560\uc778 \uae08\uc561", None))
-        self.le_discount_amount_num.setStyleSheet(QCoreApplication.translate("Form", u"background-color: transparent;", None))
-        self.le_payment_amount_num.setStyleSheet(QCoreApplication.translate("Form", u"background-color: transparent;", None))
         self.le_purchase_amount_num.setStyleSheet(QCoreApplication.translate("Form", u"background-color: transparent;", None))
         self.le_purchase_amount.setText(QCoreApplication.translate("Form", u"\uad6c\ub9e4 \uae08\uc561", None))
+        self.le_payment_amount_num.setStyleSheet(QCoreApplication.translate("Form", u"background-color: transparent;", None))
+        self.le_discount_amount.setStyleSheet(QCoreApplication.translate("Form", u"background-color: transparent;", None))
+        self.le_discount_amount.setText(QCoreApplication.translate("Form", u"\ud560\uc778 \uae08\uc561", None))
+        self.btn_back.setText(QCoreApplication.translate("Form", u"\ub4a4\ub85c\uac00\uae30", None))
     # retranslateUi
 

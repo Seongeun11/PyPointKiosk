@@ -152,7 +152,7 @@ class AdminMenuDialogView(QDialog):
         )
         if file_path:
             try:
-                from model.receipt_repository_model import ReceiptRepositoryModel
+                from repositories.excel_receipt_repository import ReceiptRepositoryModel
                 repo = ReceiptRepositoryModel()
                 repo.export_to_excel(file_path)
                 QMessageBox.information(self, "성공", "엑셀 내보내기가 완료되었습니다.")

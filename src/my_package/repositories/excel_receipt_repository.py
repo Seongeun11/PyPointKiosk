@@ -2,7 +2,7 @@
 
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 import openpyxl
@@ -12,9 +12,13 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 class ReceiptRepositoryModel:
     """
     영수증 일자별 JSON 저장 및 엑셀 보고서 변환 비즈니스 Model
-    - 결제 내역을 날짜별 파일(receipts_YYYY-MM-DD.json)로 나누어 저장 관리
+    - 결제 내역을 영업일 기준 날짜별 파일(receipts_YYYY-MM-DD.json)로 나누어 저장 관리
+    - 새벽 02:00 이전 결제건은 전일(어제) 영업일 매출로 저장됨
     """
     
+    # 영업 마감 오프셋 (새벽 2시 영업 마감 기준)
+    CLOSING_OFFSET_HOURS = 2
+
     def __init__(self, base_receipts_dir="resources/receipts", products_path="resources/products.json"):
         self.base_dir = os.path.dirname(os.path.dirname(__file__))
         self.receipts_dir = os.path.join(self.base_dir, base_receipts_dir)
@@ -23,10 +27,20 @@ class ReceiptRepositoryModel:
         # 날짜별 영수증 폴더 생성
         os.makedirs(self.receipts_dir, exist_ok=True)
 
-    def _get_daily_file_path(self, date_str: str) -> str:
-        """지정한 날짜(YYYY-MM-DD) 또는 오늘 날짜의 JSON 파일 경로 반환"""
+    def _get_business_date_str(self, dt: Optional[datetime] = None) -> str:
+        """
+        영업일 기준 YYYY-MM-DD 문자열 반환
+        - 새벽 2시 미만(00:00 ~ 01:59)은 전일 날짜로 계산
+        """
+        if dt is None:
+            dt = datetime.now()
+        business_dt = dt - timedelta(hours=self.CLOSING_OFFSET_HOURS)
+        return business_dt.strftime("%Y-%m-%d")
+
+    def _get_daily_file_path(self, date_str: Optional[str] = None) -> str:
+        """지정한 날짜(YYYY-MM-DD) 또는 현재 영업일 날짜의 JSON 파일 경로 반환"""
         if not date_str:
-            date_str = datetime.now().strftime("%Y-%m-%d")
+            date_str = self._get_business_date_str()
         filename = f"receipts_{date_str}.json"
         return os.path.join(self.receipts_dir, filename)
 
@@ -43,9 +57,10 @@ class ReceiptRepositoryModel:
 
     def add_receipt(self, pay_type: str, cart_items: list, purchase_amount: int, 
                     discount_type: str, discount_amount: int, final_amount: int) -> dict:
-        """결제 완료 시 당일 날짜 JSON 파일(receipts_YYYY-MM-DD.json)에 영수증 추가"""
-        today_str = datetime.now().strftime("%Y-%m-%d")
-        daily_file_path = self._get_daily_file_path(today_str)
+        """결제 완료 시 영업일 기준 JSON 파일(receipts_YYYY-MM-DD.json)에 영수증 추가"""
+        now = datetime.now()
+        business_date_str = self._get_business_date_str(now)
+        daily_file_path = self._get_daily_file_path(business_date_str)
 
         receipts = self._load_receipts_by_path(daily_file_path)
 
@@ -54,7 +69,7 @@ class ReceiptRepositoryModel:
 
         receipt_data = {
             "id": next_id,
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"), # 실제 거래 일시는 그대로 보존
             "pay_type": pay_type,                     
             "discount_type": discount_type,           
             "purchase_amount": purchase_amount,
@@ -65,18 +80,18 @@ class ReceiptRepositoryModel:
 
         receipts.append(receipt_data)
 
-        # 일자별 JSON 파일에 저장
+        # 영업일자별 JSON 파일에 저장
         try:
             with open(daily_file_path, "w", encoding="utf-8") as f:
                 json.dump(receipts, f, ensure_ascii=False, indent=2)
-                print(f"[Model] 영수증 저장 완료: {daily_file_path} (총 {len(receipts)}건)")
+                print(f"[Model] 영수증 저장 완료 (영업일: {business_date_str}): {daily_file_path} (총 {len(receipts)}건)")
         except Exception as e:
             print(f"[Model Error] 영수증 저장 실패: {e}")
 
         return receipt_data
 
-    def get_receipts_by_date(self, date_str: str) -> list:
-        """특정 날짜(YYYY-MM-DD)의 영수증 목록 조회 (기본값: 오늘)"""
+    def get_receipts_by_date(self, date_str: Optional[str] = None) -> list:
+        """특정 영업일 날짜(YYYY-MM-DD)의 영수증 목록 조회 (기본값: 현재 영업일)"""
         file_path = self._get_daily_file_path(date_str)
         return self._load_receipts_by_path(file_path)
 
@@ -93,11 +108,12 @@ class ReceiptRepositoryModel:
     def export_to_excel(self, export_file_path: str, target_date: Optional[str] = None) -> bool:
         """
         [개선된 로직]
+        - target_date가 지정되지 않은 경우 현재 '영업일'을 기준으로 보고서 생성
         - A열에 카테고리명을 추가하여 카테고리별 노출/판매 정도 통계 작성 가능
         - 모든 열과 엑셀 계산 수식을 A열 추가에 맞춰 1열씩 이동하여 동기화
         """
         if not target_date:
-            target_date = datetime.now().strftime("%Y-%m-%d")
+            target_date = self._get_business_date_str()
 
         receipts = self.get_receipts_by_date(target_date)
         
@@ -153,6 +169,14 @@ class ReceiptRepositoryModel:
         ws["A1"].fill = fill_title
         ws["A1"].alignment = align_center
 
+        #사용설명서 넣기
+        ws.merge_cells("T1")
+        ws["T1"].value = "매일 02:00에 마감"
+        ws["T1"].font = font_title
+        ws["T1"].fill = fill_title
+        ws["T1"].alignment = align_center
+
+        #----
         ws.merge_cells("P1:S2")
         formatted_date = datetime.strptime(target_date, "%Y-%m-%d").strftime("%Y. %m. %d")
         ws["P1"].value = formatted_date
@@ -162,8 +186,8 @@ class ReceiptRepositoryModel:
 
         # Row 3 메인 헤더 정의 (A3: 카테고리 추가)
         headers_row3 = [
-            ("A3", "카테고리"), ("B3", "품목"), ("C3", "가격표"), ("G3", "할인가"), 
-            ("I3", "일반가"), ("K3", "아카데미"), ("M3", "엔화"), ("N3", "엔화 합계"), 
+            ("A3", "카테고리"), ("B3", "품목"), ("C3", "가격표"), ("G3", "수련생할인가"), 
+            ("I3", "일반가"), ("K3", "아카데미할인가"), ("M3", "엔화"), ("N3", "엔화 합계"), 
             ("O3", "현금 합계"), ("P3", "계좌 합계"), ("Q3", "총 합계"), 
             ("R3", "아카데미 포인트"), ("S3", "총 판매량")
         ]
@@ -268,13 +292,9 @@ class ReceiptRepositoryModel:
             ws.cell(row=row_idx, column=13, value="") # 엔화 결제 수량 칸
 
             # Col 14~19: 수식 계산 (1열씩 이동된 수식 적용)
-            # N열(14): 엔화 합계 = M열 * F열
             ws.cell(row=row_idx, column=14, value=f"=M{row_idx}*F{row_idx}")
-            # O열(15): 현금 합계
             ws.cell(row=row_idx, column=15, value=f"=(G{row_idx}*{disc_price})+(I{row_idx}*{price})+(K{row_idx}*{acad_price})")
-            # P열(16): 계좌 합계
             ws.cell(row=row_idx, column=16, value=f"=(H{row_idx}*{disc_price})+(J{row_idx}*{price})+(L{row_idx}*{acad_price})")
-            # Q열(17): 총 합계 = O열 + P열
             ws.cell(row=row_idx, column=17, value=f"=O{row_idx}+P{row_idx}")
 
             # R열(18): 포인트 수량

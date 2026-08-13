@@ -91,3 +91,7 @@ class PaymentMenuModel:
         ])
 
         return "\n".join(lines)
+
+    def on_go_back(self,message:str):
+
+        print(message)

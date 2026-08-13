@@ -22,9 +22,9 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(720, 1280)
-        self.verticalLayout_2 = QVBoxLayout(Form)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        Form.resize(720, 716)
+        self.verticalLayout_3 = QVBoxLayout(Form)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.le_title = QLineEdit(Form)
@@ -53,15 +53,27 @@ class Ui_Form(object):
 
         self.verticalLayout.addWidget(self.txt_payment_list)
 
+
+        self.verticalLayout_3.addLayout(self.verticalLayout)
+
+        self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.btn_payment_completed = QPushButton(Form)
         self.btn_payment_completed.setObjectName(u"btn_payment_completed")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.btn_payment_completed.sizePolicy().hasHeightForWidth())
+        self.btn_payment_completed.setSizePolicy(sizePolicy1)
         self.btn_payment_completed.setFont(font)
 
-        self.verticalLayout.addWidget(self.btn_payment_completed)
+        self.verticalLayout_2.addWidget(self.btn_payment_completed)
 
 
-        self.verticalLayout_2.addLayout(self.verticalLayout)
+        self.verticalLayout_3.addLayout(self.verticalLayout_2)
 
+        self.verticalLayout_3.setStretch(0, 7)
+        self.verticalLayout_3.setStretch(1, 1)
 
         self.retranslateUi(Form)
 

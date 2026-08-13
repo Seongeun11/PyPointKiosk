@@ -8,7 +8,7 @@ from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QResizeEvent, QShowE
 from PySide6.QtCore import QSize, Qt, Signal, QTimer
 
 # 자동 생성된 UI 클래스 import
-from ui.ui_order_menu_fhd import Ui_Form
+from ui.ui_order_menu import Ui_Form
 from custom_widget.cart_item_widget import CartItemWidget
 
 # 타이틀 버튼의 더블클릭을 감지하기 위한 Custom PushButton
@@ -29,6 +29,8 @@ class OrderMenuView(QWidget):
     # [수량 조절 및 삭제 시그널 추가]
     change_qty_signal = Signal(str, int)  # (product_id, delta)
     remove_item_signal = Signal(str)      # (product_id)
+
+    orderview_on_go_back_signal = Signal(str) # 뒤로가기
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -166,6 +168,11 @@ class OrderMenuView(QWidget):
             # 기존 btn_title의 mouseDoubleClickEvent 재정의
             self.ui.btn_title.mouseDoubleClickEvent = self._on_title_double_clicked
             #self.ui.btn_title.clicked.connect(lambda: self.title_double_clicked_signal.emit())
+
+        if hasattr(self.ui, "btn_back"):
+            
+           self.ui.btn_back.clicked.connect(self.handle_go_back_clicked)
+            
 
     def _on_title_double_clicked(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -386,13 +393,15 @@ class OrderMenuView(QWidget):
         # 1. 품절 여부 확인
         is_sold_out = product_data.get("is_sold_out", False)
 
-        # 2. 상품명 자동 줄바꿈 및 품절 문구 추가
-        name = str(product_data.get('name', ''))
+        # [수정] Model에서 언어에 맞춰 넘겨준 display_name 및 price_str 활용
+        name = str(product_data.get('display_name', product_data.get('name', '')))
         if len(name) > 6 and ' ' not in name:
             mid = len(name) // 2
             formatted_name = name[:mid] + '\n' + name[mid:]
         else:
             formatted_name = name
+
+        formatted_price = product_data.get("price_str", f"{product_data.get('price', 0):,}원")
 
         formatted_price = f"{product_data['price']:,}원"
         
@@ -458,14 +467,13 @@ class OrderMenuView(QWidget):
             self.ui.le_select_products.setReadOnly(True)
 
     # --- QListWidget 기반 장바구니 렌더링 ---
-    def update_cart_view(self, cart_items: list, total_price: int):
-        """Designer에서 바꾼 QListWidget(lst_my_order_details)에 커스텀 위젯을 바인딩"""
+    def update_cart_view(self, cart_items: list, total_price: int, lang: str = "ko"):
+        """[수정] 통화 표기를 언어에 맞게 분기"""
         self.ui.lst_my_order_details.clear()
 
         for item in cart_items:
             item_widget = CartItemWidget(item)
             
-            # 커스텀 위젯 시그널 -> View 시그널로 릴레이
             item_widget.qty_changed_signal.connect(
                 lambda p_id, delta: self.change_qty_signal.emit(p_id, delta)
             )
@@ -473,7 +481,6 @@ class OrderMenuView(QWidget):
                 lambda p_id: self.remove_item_signal.emit(p_id)
             )
 
-            # QListWidgetItem 생성 및 위젯 연결
             list_item = QListWidgetItem(self.ui.lst_my_order_details)
             list_item.setSizeHint(item_widget.sizeHint())
 
@@ -483,4 +490,10 @@ class OrderMenuView(QWidget):
         if cart_items:
             self.ui.lst_my_order_details.scrollToBottom()
 
-        self.ui.le_total_price.setText(f"총 {total_price:,}원")
+        price_text = f"¥{total_price:,}" if lang == "ja" else f"총 {total_price:,}원"
+        self.ui.le_total_price.setText(price_text)
+
+    #뒤로가기 시그널 이벤트 연결
+    def handle_go_back_clicked(self):
+        self.orderview_on_go_back_signal.emit("goback")
+        pass
