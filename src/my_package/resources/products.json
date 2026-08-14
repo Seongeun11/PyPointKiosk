@@ -22,15 +22,6 @@
           "price_jpy": 300,
           "image": "resources/images/SpamMusubi.png",
           "is_sold_out": false
-        },
-        {
-          "id": 311,
-          "name": "숫자",
-          "name_ja": "数字",
-          "price": 3000,
-          "price_jpy": 300,
-          "image": "",
-          "is_sold_out": false
         }
       ]
     },
@@ -284,6 +275,40 @@
           "name_ja": "感謝献金",
           "price": 50000,
           "price_jpy": 5000,
+          "image": "",
+          "is_sold_out": false
+        },
+        {
+          "id": 316,
+          "name": "감사헌금",
+          "name_ja": "感謝献金",
+          "price": 100,
+          "price_jpy": 10,
+          "image": "",
+          "is_sold_out": false
+        },
+        {
+          "id": 317,
+          "name": "감사헌금",
+          "name_ja": "感謝献金",
+          "price": 10,
+          "price_jpy": 1,
+          "image": "",
+          "is_sold_out": false
+        }
+      ]
+    },
+    {
+      "title": "1",
+      "name": "잔",
+      "name_ja": "잔",
+      "products": [
+        {
+          "id": 318,
+          "name": "잔",
+          "name_ja": "잔",
+          "price": 3000,
+          "price_jpy": 300,
           "image": "",
           "is_sold_out": false
         }

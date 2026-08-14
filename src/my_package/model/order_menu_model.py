@@ -1,25 +1,32 @@
-#src\my_package\model\order_menu_model.py
+# src\my_package\model\order_menu_model.py
+
 import os
 from typing import Optional
 from repositories.menu_json_repository import MenuJsonRepository
+from utils.image_manager import ImageManager
 
 class OrderMenuModel:
     """메뉴 데이터, 다국어(한국어/일본어) 및 장바구니 비즈니스 로직 관리 Model"""
-    
+
     def __init__(self, json_path: str):
         self.base_dir = os.path.dirname(os.path.dirname(__file__))
-         # 절대 경로와 상대 경로 결합 안전 보장
+        
+        # 절대 경로와 상대 경로 결합 안전 보장
         if not os.path.isabs(json_path):
             self.json_path = os.path.join(self.base_dir, json_path)
         else:
             self.json_path = json_path
 
-        #절대 경로(self.json_path)를 Repository에 전달
+        # 절대 경로(self.json_path)를 Repository에 전달
         self.repository = MenuJsonRepository(self.base_dir, self.json_path)
 
         self.categories: list = []
         self.current_category_idx: int = 0
-        self.current_lang:str = "ko"  # 기본 언어: 'ko' (한국어/KRW), 'ja' (일본어/JPY)
+        
+        # 언어 및 통화 상태 분리
+        self.raw_mode: str = "ko_krw" # [추가] 원본 모드 문자열 저장
+        self.current_lang: str = "ko"       # 'ko' 또는 'ja'
+        self.current_currency: str = "KRW"  # 'KRW' 또는 'JPY'
 
         # 장바구니 데이터 구조: { product_id: { "info": dict, "quantity": int } }
         self.cart: dict[str, dict] = {}
@@ -35,30 +42,46 @@ class OrderMenuModel:
         if self.repository.save(self.categories):
             self.load_data()
 
+    # --- 언어 및 통화 모드 설정 ---
+    def set_language_mode(self, mode: str):
+        """'ko_krw', 'ko_jpy', 'ja_jpy' 규격 처리"""
+        self.raw_mode = mode.lower() if mode else "ko_krw" # [수정] 원본 모드 저장
+        if self.raw_mode == "ja_jpy":
+            self.current_lang = "ja"
+            self.current_currency = "JPY"
+        elif self.raw_mode == "ko_jpy":
+            self.current_lang = "ko"
+            self.current_currency = "JPY"
+        else:  # ko_krw 또는 기본값
+            self.current_lang = "ko"
+            self.current_currency = "KRW"
 
-    # --- 언어 설정 및 조회 ---
-    def set_language(self, lang: str):
-        """언어 설정 변경 ('ko' 또는 'ja')"""
-        if lang in ["ko", "ja"]:
-            self.current_lang = lang
-
+    def get_mode(self) -> str:
+        """[신규] 설정된 원본 모드 반환"""
+        return self.raw_mode
+    
     def get_language(self) -> str:
         return self.current_lang
 
-    
+    def get_currency_code(self) -> str:
+        return self.current_currency
+
+    def get_currency_unit(self) -> str:
+        return "¥" if self.current_currency == "JPY" else "원"
+
     # --- 카테고리 관리 ---
     def add_category(self, cat_name: str, cat_name_ja: str = "") -> bool:
         """신규 카테고리 추가 (한국어/일본어 지원)"""
         if not cat_name:
             return False
-            
+
         existing_ids = []
         for c in self.categories:
             try:
-                existing_ids.append(int(c.get("id")))
+                existing_ids.append(int(c.get("title", c.get("id", 0))))
             except (ValueError, TypeError):
                 pass
-        new_id = str(max(existing_ids) + 1) if existing_ids else "cat_1"
+        new_id = str(max(existing_ids) + 1) if existing_ids else "1"
 
         new_category = {
             "title": new_id,
@@ -74,10 +97,10 @@ class OrderMenuModel:
         """카테고리 삭제 (상품 존재 여부 검증 및 안전 인덱스 조정)"""
         target_cat = None
         for cat in self.categories:
-            if str(cat["title"]) == str(category_id):
+            if str(cat.get("title")) == str(category_id) or str(cat.get("id")) == str(category_id):
                 target_cat = cat
                 break
-                
+
         if not target_cat:
             return False, "존재하지 않는 카테고리입니다."
 
@@ -100,15 +123,14 @@ class OrderMenuModel:
             self.current_category_idx = max(0, len(self.categories) - 1)
 
     # --- 상품 관리 ---
-    def add_product(self, category_id: str, prod_name: str, price: int, 
+    def add_product(self, category_id: str, prod_name: str, price: int,
                     prod_name_ja: str = "", price_jpy: Optional[int] = None, image_path: str = "") -> bool:
         """신규 상품 추가 (한국어/일본어 및 원화/엔화 포함)"""
         for cat in self.categories:
-            # [수정] 타입 안전성을 보장하기 위해 str()로 비교
-            if str(cat["title"]) == str(category_id):
+            if str(cat.get("title")) == str(category_id) or str(cat.get("id")) == str(category_id):
                 existing_ids = [p["id"] for c in self.categories for p in c.get("products", []) if isinstance(p.get("id"), int)]
                 new_id = max(existing_ids) + 1 if existing_ids else 1
-                
+
                 new_prod = {
                     "id": new_id,
                     "name": prod_name,
@@ -123,9 +145,9 @@ class OrderMenuModel:
                 return True
         return False
 
-    def update_product_info(self, product_id: str, 
-                            new_cat_name: Optional[str] = None, 
-                            new_name: Optional[str] = None, 
+    def update_product_info(self, product_id: str,
+                            new_cat_name: Optional[str] = None,
+                            new_name: Optional[str] = None,
                             new_name_ja: Optional[str] = None,
                             new_price: Optional[int] = None,
                             new_price_jpy: Optional[int] = None) -> bool:
@@ -187,13 +209,14 @@ class OrderMenuModel:
                     return True
         return False
 
+    # --- 뷰(View) 전용 조회 메서드 ---
     def get_categories(self) -> list:
         """현재 선택된 언어에 맞춘 카테고리 목록 반환"""
         result = []
         for cat in self.categories:
             display_name = cat.get("name_ja") if self.current_lang == "ja" and cat.get("name_ja") else cat.get("name")
             result.append({
-                "title": cat.get("title"),
+                "title": cat.get("title", cat.get("id")),
                 "name": display_name,
                 "raw_name": cat.get("name"),
                 "raw_name_ja": cat.get("name_ja", "")
@@ -205,37 +228,46 @@ class OrderMenuModel:
             self.current_category_idx = idx
 
     def get_current_products(self) -> list:
-        """현재 언어 모드에 적합하게 변환된 상품 목록 반환"""
+        """현재 선택된 카테고리의 상품 정보 및 다국어/다중통화 계산된 정보 반환"""
         if not self.categories:
             self.current_category_idx = 0
             return []
 
         self._validate_current_category_idx()
         raw_products = self.categories[self.current_category_idx].get("products", [])
-        
-        display_products = []
-        for p in raw_products:
-            is_ja = (self.current_lang == "ja")
-            name = p.get("name_ja") if is_ja and p.get("name_ja") else p.get("name")
-            price = p.get("price_jpy", int(p.get("price", 0) // 10)) if is_ja else p.get("price", 0)
-            
-            p_display = dict(p)  # 원본 딕셔너리 복사 (name_ja, price_jpy 등 원본 필드 유지)
-            p_display["display_name"] = name
-            p_display["display_price"] = price
 
-            if is_ja:
-                p_display["price_str"] = f"{price:,}¥"  
+        display_products = []
+        is_ja_lang = (self.current_lang == "ja")
+        is_jpy_curr = (self.current_currency == "JPY")
+
+        for p in raw_products:
+            name = p.get("name_ja") if is_ja_lang and p.get("name_ja") else p.get("name")
+
+            if is_jpy_curr:
+                price = p.get("price_jpy") if p.get("price_jpy") is not None else int(p.get("price", 0) // 10)
+                price_str = f"¥{price:,}"
             else:
-                p_display["price_str"] =f"{price:,}원"
+                price = p.get("price", 0)
+                price_str = f"{price:,}원"
+
+            # ImageManager를 이용한 절대 경로 계산
+            rel_image = p.get("image", "")
+            abs_image_path = ImageManager.get_absolute_image_path(self.base_dir, rel_image)
+
+            p_display = dict(p)
+            p_display["display_name"] = name
+            p_display["computed_price"] = price
+            p_display["price_str"] = price_str
+            p_display["image_abs_path"] = abs_image_path
             display_products.append(p_display)
 
         return display_products
-
+    
     # --- 장바구니 비즈니스 로직 ---
     def add_to_cart(self, product_data: dict):
         """장바구니 담기 (고유 ID 기반)"""
         p_id = str(product_data.get("id", product_data.get("name")))
-        
+
         if p_id in self.cart:
             self.cart[p_id]["quantity"] += 1
         else:
@@ -246,39 +278,54 @@ class OrderMenuModel:
 
     def change_quantity(self, product_id: str, delta: int):
         """수량 변경 및 0 이하 시 자동 삭제"""
-        if product_id in self.cart:
-            self.cart[product_id]["quantity"] += delta
-            if self.cart[product_id]["quantity"] <= 0:
-                self.remove_from_cart(product_id)
+        p_id_str = str(product_id)
+        if p_id_str in self.cart:
+            self.cart[p_id_str]["quantity"] += delta
+            if self.cart[p_id_str]["quantity"] <= 0:
+                self.remove_from_cart(p_id_str)
 
     def remove_from_cart(self, product_id: str):
         """단일 상품 삭제"""
-        if product_id in self.cart:
-            del self.cart[product_id]
+        p_id_str = str(product_id)
+        if p_id_str in self.cart:
+            del self.cart[p_id_str]
 
     def clear_cart(self):
         """장바구니 전체 초기화"""
         self.cart.clear()
 
     def get_cart_items(self) -> list:
-        """현재 언어(원화/엔화) 설정에 맞춰 동적으로 계산된 장바구니 리스트 반환"""
+        """현재 언어 및 통화 상태가 실시간 계산되어 반영된 장바구니 리스트 반환"""
         items = []
-        is_ja = (self.current_lang == "ja")
+        is_ja_lang = (self.current_lang == "ja")
+        is_jpy_curr = (self.current_currency == "JPY")
 
         for p_id, data in self.cart.items():
             info = data["info"]
             qty = data["quantity"]
 
-            name = info.get("name_ja") if is_ja and info.get("name_ja") else info.get("name")
-            price = info.get("price_jpy", int(info.get("price", 0) // 10)) if is_ja else info.get("price", 0)
+            name = info.get("name_ja") if is_ja_lang and info.get("name_ja") else info.get("name")
             
+            if is_jpy_curr:
+                price = info.get("price_jpy") if info.get("price_jpy") is not None else int(info.get("price", 0) // 10)
+                unit = "¥"
+                total_price = price * qty
+                price_str = f"¥{total_price:,}"
+            else:
+                price = info.get("price", 0)
+                unit = "원"
+                total_price = price * qty
+                price_str = f"{total_price:,}원"
+
             items.append({
                 "id": p_id,
                 "name": name,
                 "price": price,
                 "quantity": qty,
-                "total_price": price * qty,
-                "price_str": f"¥{price * qty:,}" if is_ja else f"{price * qty:,}원"
+                "total_price": total_price,
+                "currency": self.current_currency,
+                "unit": unit,
+                "price_str": price_str
             })
         return items
 
@@ -290,5 +337,5 @@ class OrderMenuModel:
         """현재 선택된 언어/통화 기준의 장바구니 총 금액 합계"""
         return sum(item["total_price"] for item in self.get_cart_items())
 
-    def on_view_go_back(self,message:str):
+    def on_view_go_back(self, message: str):
         print(message)

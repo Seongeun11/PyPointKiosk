@@ -32,24 +32,30 @@ class MainController(QMainWindow):
     """
     def __init__(self):
         super().__init__()
-        self.selected_lang: str = "ko"  # [추가] 글로벌 언어 상태 (기본값: 'ko')
+        self.selected_lang: str = "ko_krw"  # 기본값: 한국어 + 원화
         self._init_window()
         self._init_views()
+        self.switch_to_main_menu()
 
     def _init_window(self):
         """초기 창 설정 (로그인 화면 스펙)"""
         self.setWindowTitle("아카데미 관리자전용 포스기 - 로그인")
-
     def _init_views(self):
-        """화면 전환용 StackedWidget 설정 및 로그인 컨트롤러 연동"""
-        self.stack = QStackedWidget(self)
-        self.setCentralWidget(self.stack)
+            """화면 전환용 StackedWidget 설정 및 로그인 컨트롤러 연동"""
+            self.stack = QStackedWidget(self)
+            self.setCentralWidget(self.stack)
+    
+        
+    #def _init_views_test(self):
+    #    """화면 전환용 StackedWidget 설정 및 로그인 컨트롤러 연동"""
+    #    self.stack = QStackedWidget(self)
+    #    self.setCentralWidget(self.stack)
 
         # 1. LoginController 생성 및 성공 콜백 연결
-        self.login_controller = LoginController(
-            stacked_widget=self.stack,
-            on_success=self.on_login_succeeded
-        )
+    #    self.login_controller = LoginController(
+    #        stacked_widget=self.stack,
+    #        on_success=self.on_login_succeeded
+    #    )
 
     def on_login_succeeded(self):
         """로그인 성공 시 실행되는 메인 화면 전환 로직"""
@@ -108,25 +114,24 @@ class MainController(QMainWindow):
                 view=self.order_menu_view
             )
             
-            # [핵심] pay_requested_signal (cart_items, total_price)을 switch_to_payment_menu로 전달
+           # [수정] pay_requested_signal에서 lang_mode도 포함하여 전달받음
             self.order_menu_controller.pay_requested_signal.connect(
                 self.switch_to_payment_menu
             )
-            # [핵심 추가] 주문 화면에서 뒤로가기 요청 시 메인 메뉴 화면으로 전환
             self.order_menu_controller.go_back_requested_signal.connect(
                 self.switch_to_main_menu
             )            
             
             self.stack.addWidget(self.order_menu_view)
-        # [핵심 추가] 주문 화면으로 전환될 때 현재 저장된 언어 설정 적용
+
         self.order_menu_controller.set_language(self.selected_lang)
         self.setWindowTitle("아카데미 관리자전용 포스기 - 주문하기")
         self.stack.setCurrentWidget(self.order_menu_view)
 
 
-    # [수정] 파라미터에 cart_items: list 추가!
-    def switch_to_payment_menu(self, cart_items: list, total_price: int):
-        """OrderMenuView에서 결제 요청 시 cart_items와 total_price를 받아 처리"""
+    # [수정] lang_mode 파라미터 추가 수신
+    def switch_to_payment_menu(self, cart_items: list, total_price: int, lang_mode: str = "ko_krw"):
+        """OrderMenuView에서 결제 요청 시 cart_items, total_price, lang_mode를 받아 처리"""
         if total_price <= 0 or not cart_items:
             QMessageBox.warning(self, "알림", "장바구니에 담긴 상품이 없습니다.")
             return
@@ -140,18 +145,16 @@ class MainController(QMainWindow):
                 view=self.payment_menu_view
             )
             
-            # [수정] 영수증 텍스트(receipt_text)를 파라미터로 받는 콜백 연결
             self.payment_menu_controller.payment_completed_signal.connect(
                 self.on_payment_finished
             )
-            # [핵심 추가] 결제 화면에서 뒤로가기 요청 시 메인 메뉴 화면으로 전환
             self.payment_menu_controller.go_back_requested_signal.connect(
                 self.switch_to_order_menu
             )             
             self.stack.addWidget(self.payment_menu_view)
 
-        # [핵심] 장바구니 목록과 총 금액을 함께 전달
-        self.payment_menu_controller.init_payment_data(cart_items, total_price)
+        # [수정] 장바구니 목록, 총 금액과 함께 언어/통화 모드 전달
+        self.payment_menu_controller.init_payment_data(cart_items, total_price, lang_mode)
 
         self.setWindowTitle("아카데미 관리자전용 포스기 - 결제하기")
         self.stack.setCurrentWidget(self.payment_menu_view)

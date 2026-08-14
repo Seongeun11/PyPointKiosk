@@ -4,7 +4,8 @@ from PySide6.QtCore import QObject, Signal
 from view.admin_menu_dialog_view import AdminMenuDialogView  # QObject, Signal 추가
 
 class OrderMenuController(QObject):         # QObject 상속 추가
-    pay_requested_signal = Signal(list, int)      # [추가] 결제 요청 시그널 (파라미터: cart_items 목록, 총금액)
+    # [수정] 결제 요청 시그널에 currency(str) 매개변수 추가 (cart_items, total_price, currency)
+    pay_requested_signal = Signal(list, int, str)
     go_back_requested_signal = Signal()
     def __init__(self, model, view):
         super().__init__()
@@ -28,9 +29,9 @@ class OrderMenuController(QObject):         # QObject 상속 추가
         # 초기 화면 업데이트
         self.update_view()
 
-    def set_language(self, lang: str):
-        """[신규] 언어를 변경하고 뷰를 즉시 동기화"""
-        self.model.set_language(lang)
+    def set_language(self, mode: str):
+        """[수정] 모드 코드를 모델에 반영하고 뷰 동기화"""
+        self.model.set_language_mode(mode)
         self.update_view()
 
     def update_view(self):
@@ -42,10 +43,16 @@ class OrderMenuController(QObject):         # QObject 상속 추가
         self.view.render_products(products)
         self._refresh_cart_and_count()
 
-    #def update_cart_display(self):
-    #    cart_items = self.model.get_cart_items()
-    #    total_price = self.model.get_total_price()
-    #    self.view.update_cart_view(cart_items, total_price)
+    def _refresh_cart_and_count(self):
+        cart_items = self.model.get_cart_items()
+        total_price = self.model.get_total_price()
+        total_count = self.model.get_total_count()
+        current_currency = self.model.get_currency_code()
+
+        # [수정] 통화 코드를 명시적으로 전달
+        self.view.update_cart_view(cart_items, total_price, currency=current_currency)
+        self.view.update_product_count_view(total_count)
+
     def handle_title_double_click(self):
             print("[Controller] 타이틀 클릭 - 메인 메뉴로 돌아가기 요청")
             dialog = AdminMenuDialogView(self.model, parent=self.view)
@@ -80,32 +87,23 @@ class OrderMenuController(QObject):         # QObject 상속 추가
         self.model.clear_cart()
         self._refresh_cart_and_count()
     
+    # src/my_package/controller/order_menu_controller.py
+
     def handle_pay_click(self):
         total_price = self.model.get_total_price()
         if total_price == 0:
             print("[Controller] 장바구니가 비어 있습니다.")
             return
-        print(f"[Controller] 결제 진행 - 총 금액: {total_price:,}원")
 
         cart_items = self.model.get_cart_items()
-        print(f"[Controller] 결제 진행 - 상품 종류: {len(cart_items)}개, 총 금액: {total_price:,}원")
+        raw_mode = self.model.get_mode() # [수정] 단순 lang이 아닌 원본 mode("ko_jpy" 등) 추출
+        currency_code = self.model.get_currency_code()
 
-        # [핵심] 장바구니 상세 목록(cart_items)과 총액(total_price)을 같이 전달
-        self.pay_requested_signal.emit(cart_items, total_price)
+        print(f"[Controller] 결제 진행 - 통화: {currency_code}, 모드: {raw_mode}, 총 금액: {total_price:,}")
+
+        # [수정] raw_mode를 결제 시그널로 전달
+        self.pay_requested_signal.emit(cart_items, total_price, raw_mode)
         
-
-    def _refresh_cart_and_count(self):
-        """Model 데이터를 읽어 View(장바구니 리스트 + 상품 개수)를 동기화"""
-        cart_items = self.model.get_cart_items()
-        total_price = self.model.get_total_price()
-        
-        # [수정] Model에서 직접 전체 누적 수량을 가져옴 (Key 불일치 오류 방지)
-        total_count = self.model.get_total_count()
-
-        # View 업데이트 요청
-        self.view.update_cart_view(cart_items, total_price)
-        self.view.update_product_count_view(total_count)
-
     def handle_go_back(self):
         self.model.on_view_go_back("order_view_goback")
         self.model.clear_cart()

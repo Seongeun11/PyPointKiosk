@@ -7,8 +7,12 @@ class MainMenuModel:
         print("MainMenuModel이 시작되었습니다.")
     
     def set_text(self,message:str):
-        if message == "ja":
+        if message == "ja_jpy":
             self._text = "注文する"
+        elif message == "ko_jpy":
+            self._text = "주문하기 (엔화)"
+        elif message == "ko_krw":
+            self._text = "주문하기 (원화)"
         else:
             self._text = "주문하기"
         return self._text

@@ -1,15 +1,15 @@
 #src\my_package\view\order_menu_view.py
-import os
 from PySide6.QtWidgets import (
     QWidget, QSizePolicy, QPushButton, QToolButton, QLayout, QSpacerItem,
     QScrollArea, QHBoxLayout, QGridLayout, QListWidgetItem
 )
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QResizeEvent, QShowEvent, QMouseEvent
+from PySide6.QtGui import QIcon, QResizeEvent, QShowEvent, QMouseEvent
 from PySide6.QtCore import QSize, Qt, Signal, QTimer
 
 # 자동 생성된 UI 클래스 import
-from ui.ui_order_menu import Ui_Form
-from custom_widget.cart_item_widget import CartItemWidget
+from ui.ui_order_menu import Ui_Form 
+from custom_widget.cart_item_widget import CartItemWidget #장바구니 관리 클래스
+from utils.image_manager import ImageManager #이미지 관리 유틸리티 클래스
 
 # 타이틀 버튼의 더블클릭을 감지하기 위한 Custom PushButton
 class TitleButton(QPushButton):
@@ -179,15 +179,8 @@ class OrderMenuView(QWidget):
             self.title_double_clicked_signal.emit()
 
     def _get_placeholder_icon(self) -> QIcon:
-        pixmap = QPixmap(120, 120)
-        pixmap.fill(QColor("#E0E0E0"))
-        painter = QPainter(pixmap)
-        painter.setPen(QColor("#888888"))
-        painter.drawText(
-            pixmap.rect(), Qt.AlignmentFlag.AlignCenter, "No Image"
-        )
-        painter.end()
-        return QIcon(pixmap)
+        """ImageManager 위임"""
+        return ImageManager.create_placeholder_icon(120, 120, "No Image")
 
     def _get_category_step(self) -> int:
         if self.category_layout.count() > 0:
@@ -390,10 +383,8 @@ class OrderMenuView(QWidget):
         btn.setFixedHeight(height)
         btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
 
-        # 1. 품절 여부 확인
         is_sold_out = product_data.get("is_sold_out", False)
 
-        # [수정] Model에서 언어에 맞춰 넘겨준 display_name 및 price_str 활용
         name = str(product_data.get('display_name', product_data.get('name', '')))
         if len(name) > 6 and ' ' not in name:
             mid = len(name) // 2
@@ -401,26 +392,19 @@ class OrderMenuView(QWidget):
         else:
             formatted_name = name
 
-        formatted_price = product_data.get("price_str", f"{product_data.get('price', 0):,}원")
-
-        formatted_price = f"{product_data['price']:,}원"
+        formatted_price = product_data.get("price_str", f"{product_data.get('computed_price', product_data.get('price', 0)):,}원")
         
         if is_sold_out:
             btn.setText(f"[품절]\n{formatted_name}")
         else:
             btn.setText(f"{formatted_name}\n{formatted_price}")
 
-        # 이미지 설정
+        # ImageManager를 이용한 아이콘 설정
         img_path = product_data.get("image_abs_path", "")
-        if img_path and os.path.exists(img_path):
-            btn.setIcon(QIcon(img_path))
-        else:
-            btn.setIcon(self._get_placeholder_icon())
+        btn.setIcon(ImageManager.get_product_icon(img_path))
 
-        # 3. 품절 버튼 비활성화 처리 (클릭 금지)
         btn.setEnabled(not is_sold_out)
 
-        # 4. 버튼 스타일시트 (disabled 상태 스타일 추가)
         btn.setStyleSheet("""
             QToolButton {
                 border: 1px solid #CCCCCC;
@@ -467,13 +451,18 @@ class OrderMenuView(QWidget):
             self.ui.le_select_products.setReadOnly(True)
 
     # --- QListWidget 기반 장바구니 렌더링 ---
-    def update_cart_view(self, cart_items: list, total_price: int, lang: str = "ko"):
-        """[수정] 통화 표기를 언어에 맞게 분기"""
+    # OrderMenuView 내 장바구니 렌더링 업데이트 함수 수정
+    def update_cart_view(self, cart_items: list, total_price: int, currency: str = "KRW"):
         self.ui.lst_my_order_details.clear()
+        # [방어 로직] 호출 시 currency 파라미터가 누락되었더라도 cart_items 내 첫번째 아이템에서 currency 자동 추출
+        target_currency = currency
+        if cart_items and isinstance(cart_items[0], dict):
+            item_curr = cart_items[0].get("currency")
+            if item_curr:
+                target_currency = item_curr
 
         for item in cart_items:
             item_widget = CartItemWidget(item)
-            
             item_widget.qty_changed_signal.connect(
                 lambda p_id, delta: self.change_qty_signal.emit(p_id, delta)
             )
@@ -483,14 +472,18 @@ class OrderMenuView(QWidget):
 
             list_item = QListWidgetItem(self.ui.lst_my_order_details)
             list_item.setSizeHint(item_widget.sizeHint())
-
             self.ui.lst_my_order_details.addItem(list_item)
             self.ui.lst_my_order_details.setItemWidget(list_item, item_widget)
 
         if cart_items:
             self.ui.lst_my_order_details.scrollToBottom()
 
-        price_text = f"¥{total_price:,}" if lang == "ja" else f"총 {total_price:,}원"
+        # [수정] 통화 단위 및 기호(¥ / 원) 판별 반영
+        if str(target_currency).upper() == "JPY":
+            price_text = f"총 ¥{total_price:,}"
+        else:
+            price_text = f"총 {total_price:,}원"
+
         self.ui.le_total_price.setText(price_text)
 
     #뒤로가기 시그널 이벤트 연결

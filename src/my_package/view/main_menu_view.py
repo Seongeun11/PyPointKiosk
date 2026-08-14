@@ -26,20 +26,20 @@ class MainMenuView(QWidget):
         # 버튼 별 시그널 슬롯 개별 연결
         self.ui.btn_start_main_menu.clicked.connect(self._handle_start_clicked)
         self.ui.btn_korean.clicked.connect(self.handle_korean_clicked)
-        self.ui.btn_japanese.clicked.connect(self.handle_japan_clicked)
-        self.ui.btn_english.clicked.connect(self.handle_english_clicked)
+        self.ui.btn_korean_ja_cash.clicked.connect(self.handle_korean_ja_cash_clicked)
+        self.ui.btn_japanese.clicked.connect(self.handle_japanese_clicked)
         
     def _handle_start_clicked(self):
         self.start_requested.emit("주문하기 버튼 클릭됨")
 
-    def handle_english_clicked(self):
-        self.language_signal.emit("en")
+    def handle_japanese_clicked(self):
+        self.language_signal.emit("ja_jpy")      # [수정] 일본어 + 엔화
 
-    def handle_japan_clicked(self):
-        self.language_signal.emit("ja")
+    def handle_korean_ja_cash_clicked(self):
+        self.language_signal.emit("ko_jpy")      # [수정] 한국어 + 엔화
 
     def handle_korean_clicked(self):
-        self.language_signal.emit("ko")
+        self.language_signal.emit("ko_krw")      # [수정] 한국어 + 원화
 
     def update_btn_text(self,text):
         self.ui.btn_start_main_menu.setText(text)

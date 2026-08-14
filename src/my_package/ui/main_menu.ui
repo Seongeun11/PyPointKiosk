@@ -91,7 +91,7 @@
    <item>
     <layout class="QGridLayout" name="gridLayout" rowstretch="0" columnstretch="0,0,0">
      <item row="0" column="1">
-      <widget class="QPushButton" name="btn_japanese">
+      <widget class="QPushButton" name="btn_korean_ja_cash">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -107,7 +107,7 @@
         <enum>Qt::FocusPolicy::NoFocus</enum>
        </property>
        <property name="text">
-        <string>日本語</string>
+        <string>한국어(엔화)</string>
        </property>
       </widget>
      </item>
@@ -133,9 +133,9 @@
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="QPushButton" name="btn_english">
+      <widget class="QPushButton" name="btn_japanese">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -152,7 +152,7 @@
         <enum>Qt::FocusPolicy::NoFocus</enum>
        </property>
        <property name="text">
-        <string>English</string>
+        <string>일본어(엔화)</string>
        </property>
        <property name="checkable">
         <bool>false</bool>

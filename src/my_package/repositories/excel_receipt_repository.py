@@ -1,5 +1,4 @@
-# src/my_package/model/receipt_repository_model.py
-
+#src\my_package\repositories\excel_receipt_repository.py
 import os
 import json
 from datetime import datetime, timedelta
@@ -8,6 +7,7 @@ from typing import Optional
 import openpyxl
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter  # Import 추가로 모듈 에러 해결
 
 class ReceiptRepositoryModel:
     """
@@ -28,10 +28,7 @@ class ReceiptRepositoryModel:
         os.makedirs(self.receipts_dir, exist_ok=True)
 
     def _get_business_date_str(self, dt: Optional[datetime] = None) -> str:
-        """
-        영업일 기준 YYYY-MM-DD 문자열 반환
-        - 새벽 2시 미만(00:00 ~ 01:59)은 전일 날짜로 계산
-        """
+        """영업일 기준 YYYY-MM-DD 문자열 반환 (새벽 2시 미만은 전일 날짜)"""
         if dt is None:
             dt = datetime.now()
         business_dt = dt - timedelta(hours=self.CLOSING_OFFSET_HOURS)
@@ -56,8 +53,9 @@ class ReceiptRepositoryModel:
             return []
 
     def add_receipt(self, pay_type: str, cart_items: list, purchase_amount: int, 
-                    discount_type: str, discount_amount: int, final_amount: int) -> dict:
-        """결제 완료 시 영업일 기준 JSON 파일(receipts_YYYY-MM-DD.json)에 영수증 추가"""
+                    discount_type: str, discount_amount: int, final_amount: int,
+                    currency: str = "KRW") -> dict:
+        """결제 완료 시 영업일 기준 JSON 파일에 영수증 추가 (통화 단위 currency 명시 저장)"""
         now = datetime.now()
         business_date_str = self._get_business_date_str(now)
         daily_file_path = self._get_daily_file_path(business_date_str)
@@ -69,9 +67,10 @@ class ReceiptRepositoryModel:
 
         receipt_data = {
             "id": next_id,
-            "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"), # 실제 거래 일시는 그대로 보존
+            "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
             "pay_type": pay_type,                     
             "discount_type": discount_type,           
+            "currency": currency,                       # 통화 정보 기록 ('JPY' / 'KRW')
             "purchase_amount": purchase_amount,
             "discount_amount": discount_amount,
             "final_amount": final_amount,
@@ -84,14 +83,14 @@ class ReceiptRepositoryModel:
         try:
             with open(daily_file_path, "w", encoding="utf-8") as f:
                 json.dump(receipts, f, ensure_ascii=False, indent=2)
-                print(f"[Model] 영수증 저장 완료 (영업일: {business_date_str}): {daily_file_path} (총 {len(receipts)}건)")
+                print(f"[Model] 영수증 저장 완료 (통화: {currency}, 영업일: {business_date_str}): {daily_file_path}")
         except Exception as e:
             print(f"[Model Error] 영수증 저장 실패: {e}")
 
         return receipt_data
 
     def get_receipts_by_date(self, date_str: Optional[str] = None) -> list:
-        """특정 영업일 날짜(YYYY-MM-DD)의 영수증 목록 조회 (기본값: 현재 영업일)"""
+        """특정 영업일 날짜(YYYY-MM-DD)의 영수증 목록 조회"""
         file_path = self._get_daily_file_path(date_str)
         return self._load_receipts_by_path(file_path)
 
@@ -107,17 +106,17 @@ class ReceiptRepositoryModel:
 
     def export_to_excel(self, export_file_path: str, target_date: Optional[str] = None) -> bool:
         """
-        [개선된 로직]
-        - target_date가 지정되지 않은 경우 현재 '영업일'을 기준으로 보고서 생성
-        - A열에 카테고리명을 추가하여 카테고리별 노출/판매 정도 통계 작성 가능
-        - 모든 열과 엑셀 계산 수식을 A열 추가에 맞춰 1열씩 이동하여 동기화
+        [완벽 이미지 매칭 로직]
+        - 이미지 양식(A~T열 레이아웃, 셀 병합, 헤더 구성)과 100% 동일한 일일 판매 보고서 생성
+        - 엔화/현금/계좌 수량 집계 및 정확한 엑셀 수식 작성
+        - 최하단에 엔화/원화 독립 매출 합계 행 추가
         """
         if not target_date:
             target_date = self._get_business_date_str()
 
         receipts = self.get_receipts_by_date(target_date)
         
-        # 1. products.json으로부터 Master ID 및 카테고리 정보 로드
+        # 1. products.json Master ID 및 카테고리 정보 로드
         stats = {}
         if os.path.exists(self.products_path):
             try:
@@ -132,108 +131,26 @@ class ReceiptRepositoryModel:
                                 "name": p.get("name", ""),
                                 "category": c_name,
                                 "price": p.get("price", 0),
-                                "disc_cash": 0, "disc_bank": 0,
-                                "norm_cash": 0, "norm_bank": 0,
+                                "disc_cash": 0, "disc_bank": 0, "disc_jpy": 0,
+                                "norm_cash": 0, "norm_bank": 0, "norm_jpy": 0,
                                 "acad_cash": 0, "acad_bank": 0,
                                 "point_qty": 0, "total_qty": 0
                             }
             except Exception as e:
                 print(f"[Model Error] 상품 목록 로드 실패: {e}")
 
-        wb = openpyxl.Workbook()
-        ws = wb.active
-
-        if ws is None or not isinstance(ws, Worksheet):
-            ws = wb.create_sheet(title="일일 판매 보고서")
-        else:
-            ws.title = "일일 판매 보고서"
-
-        # 서식 및 스타일 정의
-        font_title = Font(name="맑은 고딕", size=14, bold=True)
-        font_header = Font(name="맑은 고딕", size=9, bold=True)
-        
-        fill_title = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
-        fill_sub_title = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
-
-        thin_border = Border(
-            left=Side(style='thin'), right=Side(style='thin'),
-            top=Side(style='thin'), bottom=Side(style='thin')
-        )
-        align_center = Alignment(horizontal='center', vertical='center', wrap_text=True)
-        align_right = Alignment(horizontal='right', vertical='center')
-
-        # 엑셀 타이틀 헤더 (A열 추가로 인한 전체 열 영역: A~S열 총 19개)
-        ws.merge_cells("A1:O2")
-        ws["A1"].value = "만물복귀 카페팀 일일 판매 보고서"
-        ws["A1"].font = font_title
-        ws["A1"].fill = fill_title
-        ws["A1"].alignment = align_center
-
-        #사용설명서 넣기
-        ws.merge_cells("T1")
-        ws["T1"].value = "매일 02:00에 마감"
-        ws["T1"].font = font_title
-        ws["T1"].fill = fill_title
-        ws["T1"].alignment = align_center
-
-        #----
-        ws.merge_cells("P1:S2")
-        formatted_date = datetime.strptime(target_date, "%Y-%m-%d").strftime("%Y. %m. %d")
-        ws["P1"].value = formatted_date
-        ws["P1"].font = font_title
-        ws["P1"].fill = fill_title
-        ws["P1"].alignment = align_center
-
-        # Row 3 메인 헤더 정의 (A3: 카테고리 추가)
-        headers_row3 = [
-            ("A3", "카테고리"), ("B3", "품목"), ("C3", "가격표"), ("G3", "수련생할인가"), 
-            ("I3", "일반가"), ("K3", "아카데미할인가"), ("M3", "엔화"), ("N3", "엔화 합계"), 
-            ("O3", "현금 합계"), ("P3", "계좌 합계"), ("Q3", "총 합계"), 
-            ("R3", "아카데미 포인트"), ("S3", "총 판매량")
-        ]
-        
-        ws.merge_cells("A3:A4")
-        ws.merge_cells("B3:B4")
-        ws.merge_cells("C3:F3")
-        ws.merge_cells("G3:H3")
-        ws.merge_cells("I3:J3")
-        ws.merge_cells("K3:L3")
-        ws.merge_cells("M3:M4")
-        ws.merge_cells("N3:N4")
-        ws.merge_cells("O3:O4")
-        ws.merge_cells("P3:P4")
-        ws.merge_cells("Q3:Q4")
-        ws.merge_cells("R3:R4")
-        ws.merge_cells("S3:S4")
-
-        for cell_ref, text in headers_row3:
-            ws[cell_ref].value = text
-            ws[cell_ref].font = font_header
-            ws[cell_ref].alignment = align_center
-            ws[cell_ref].fill = fill_sub_title
-
-        # Row 4 서브 헤더 정의 (각 1칸씩 우측으로 이동)
-        sub_headers = {
-            "C4": "할인", "D4": "원", "E4": "아카데미", "F4": "엔",
-            "G4": "현금", "H4": "계좌", "I4": "현금", "J4": "계좌",
-            "K4": "현금", "L4": "계좌"
-        }
-        for cell_ref, text in sub_headers.items():
-            ws[cell_ref].value = text
-            ws[cell_ref].font = font_header
-            ws[cell_ref].alignment = align_center
-            ws[cell_ref].fill = fill_sub_title
-
-        # 2. 영수증 내역 집계 (ID 기준으로 분리)
+        # 2. 영수증 내역 집계
         for r in receipts:
-            p_type = r.get("pay_type")
-            d_type = r.get("discount_type")
+            p_type = r.get("pay_type")        # cash, bank, point 등
+            d_type = r.get("discount_type")   # student, academy, none
+            currency = r.get("currency", "KRW")
             items = r.get("items", [])
 
             for item in items:
                 prod_id = str(item.get("id", item.get("name")))
                 name = item.get("name", "미등록상품")
                 qty = item.get("quantity", 0)
+                item_currency = item.get("currency", currency)
 
                 if prod_id not in stats:
                     stats[prod_id] = {
@@ -241,8 +158,8 @@ class ReceiptRepositoryModel:
                         "name": name,
                         "category": "기타", 
                         "price": item.get("price", 0),
-                        "disc_cash": 0, "disc_bank": 0,
-                        "norm_cash": 0, "norm_bank": 0,
+                        "disc_cash": 0, "disc_bank": 0, "disc_jpy": 0,
+                        "norm_cash": 0, "norm_bank": 0, "norm_jpy": 0,
                         "acad_cash": 0, "acad_bank": 0,
                         "point_qty": 0, "total_qty": 0
                     }
@@ -252,72 +169,211 @@ class ReceiptRepositoryModel:
 
                 if p_type == "point":
                     st["point_qty"] += qty
-                elif d_type == "student":
+                elif item_currency == "JPY": # 엔화 결제건
+                    if d_type == "student":
+                        st["disc_jpy"] += qty
+                    else:
+                        st["norm_jpy"] += qty
+                elif d_type == "student": # 수련생 할인
                     if p_type == "cash": st["disc_cash"] += qty
                     elif p_type == "bank": st["disc_bank"] += qty
-                elif d_type == "academy":
+                elif d_type == "academy": # 아카데미 할인
                     if p_type == "cash": st["acad_cash"] += qty
                     elif p_type == "bank": st["acad_bank"] += qty
-                else:
+                else: # 일반
                     if p_type == "cash": st["norm_cash"] += qty
                     elif p_type == "bank": st["norm_bank"] += qty
 
-        # 3. 엑셀 셀 채우기 (A열: 카테고리, B열: 품목 ...)
-        row_idx = 5
+        # 3. 엑셀 워크북 및 시트 초기화
+        wb = openpyxl.Workbook()
+        ws = wb.active
+
+        if ws is None or not isinstance(ws, Worksheet):
+            ws = wb.create_sheet(title="일일 판매 보고서")
+        else:
+            ws.title = "일일 판매 보고서"
+
+        # 4. 서식 및 스타일 정의
+        font_title = Font(name="맑은 고딕", size=14, bold=True)
+        font_header = Font(name="맑은 고딕", size=9, bold=True)
+        font_data = Font(name="맑은 고딕", size=9)
+        font_sum = Font(name="맑은 고딕", size=10, bold=True) # 합계행 강조 폰트
+        
+        fill_green = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
+        fill_sub_title = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
+        fill_sum_row = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid") # 합계행 연노랑 배경
+
+        thin_border = Border(
+            left=Side(style='thin'), right=Side(style='thin'),
+            top=Side(style='thin'), bottom=Side(style='thin')
+        )
+        align_center = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        align_right = Alignment(horizontal='right', vertical='center')
+        align_left = Alignment(horizontal='left', vertical='center')
+
+        # --- 5. 타이틀 영역 (A1:N2 메인타이틀, O1:T2 날짜) ---
+        ws.merge_cells("A1:N2")
+        ws["A1"].value = "만물복귀 카페팀 일일 판매 보고서"
+        ws["A1"].font = font_title
+        ws["A1"].fill = fill_green
+        ws["A1"].alignment = align_center
+
+        ws.merge_cells("O1:T2")
+        formatted_date = datetime.strptime(target_date, "%Y-%m-%d").strftime("%Y. %m. %d")
+        ws["O1"].value = formatted_date
+        ws["O1"].font = font_title
+        ws["O1"].fill = fill_green
+        ws["O1"].alignment = align_center
+
+        for r in range(1, 3):
+            for c in range(1, 21):
+                ws.cell(row=r, column=c).border = thin_border
+
+        # --- 6. 헤더 3행 & 4행 생성 ---
+        ws.merge_cells("A3:A4") # 카테고리
+        ws.merge_cells("B3:B4") # 품목
+        ws.merge_cells("C3:F3") # 가격표
+        ws.merge_cells("G3:I3") # 수련생할인가
+        ws.merge_cells("J3:L3") # 일반가
+        ws.merge_cells("M3:N3") # 아카데미할인가
+        ws.merge_cells("O3:O4") # 엔화 합계
+        ws.merge_cells("P3:P4") # 현금 합계
+        ws.merge_cells("Q3:Q4") # 계좌 합계
+        ws.merge_cells("R3:R4") # 총 합계
+        ws.merge_cells("S3:S4") # 아카데미 포인트
+        ws.merge_cells("T3:T4") # 총 판매량
+
+        headers_row3 = [
+            ("A3", "카테고리"), ("B3", "품목"), ("C3", "가격표"), 
+            ("G3", "수련생할인가"), ("J3", "일반가"), ("M3", "아카데미할인가"), 
+            ("O3", "엔화 합계"), ("P3", "현금 합계"), ("Q3", "계좌 합계"), 
+            ("R3", "총 합계"), ("S3", "아카데미 포인트"), ("T3", "총 판매량")
+        ]
+        for cell_ref, text in headers_row3:
+            ws[cell_ref].value = text
+            ws[cell_ref].font = font_header
+            ws[cell_ref].alignment = align_center
+            ws[cell_ref].fill = fill_sub_title
+
+        # 서브 헤더 (4행)
+        sub_headers = {
+            "C4": "할인", "D4": "원", "E4": "아카데미", "F4": "엔",
+            "G4": "현금", "H4": "계좌", "I4": "엔화(현금)",
+            "J4": "현금", "K4": "계좌", "L4": "엔화(현금)",
+            "M4": "현금", "N4": "계좌"
+        }
+        for cell_ref, text in sub_headers.items():
+            ws[cell_ref].value = text
+            ws[cell_ref].font = font_header
+            ws[cell_ref].alignment = align_center
+            ws[cell_ref].fill = fill_sub_title
+
+        for r in range(3, 5):
+            for c in range(1, 21):
+                ws.cell(row=r, column=c).border = thin_border
+
+        # --- 7. 데이터 셀 채우기 (5행부터) ---
+        start_data_row = 5
+        row_idx = start_data_row
+
         for prod_id, data in stats.items():
             category = data.get("category", "기타")
             name = data["name"]
             price = data["price"]
             disc_price = int(price * 0.9)
             acad_price = int(price * 0.85)
+            jpy_price = int(round(price / 10))
 
-            # Col 1: 카테고리
+            # A~B열: 카테고리, 품목
             ws.cell(row=row_idx, column=1, value=category)
-            # Col 2: 품목
             ws.cell(row=row_idx, column=2, value=name)
             
-            # Col 3~6: 가격표 (할인가, 원화, 아카데미가, 엔화)
-            ws.cell(row=row_idx, column=3, value=f"₩{disc_price:,}")
-            ws.cell(row=row_idx, column=4, value=f"₩{price:,}")
-            ws.cell(row=row_idx, column=5, value=f"₩{acad_price:,}")
-            ws.cell(row=row_idx, column=6, value=f"¥{int(price/10)}")
+            # C~F열: 가격표
+            ws.cell(row=row_idx, column=3, value=disc_price)
+            ws.cell(row=row_idx, column=4, value=price)
+            ws.cell(row=row_idx, column=5, value=acad_price)
+            ws.cell(row=row_idx, column=6, value=jpy_price)
 
-            # Col 7~12: 수량 집계 (할인 현금/계좌, 일반 현금/계좌, 아카데미 현금/계좌)
-            ws.cell(row=row_idx, column=7, value=data["disc_cash"] or "")
-            ws.cell(row=row_idx, column=8, value=data["disc_bank"] or "")
-            ws.cell(row=row_idx, column=9, value=data["norm_cash"] or "")
-            ws.cell(row=row_idx, column=10, value=data["norm_bank"] or "")
-            ws.cell(row=row_idx, column=11, value=data["acad_cash"] or "")
-            ws.cell(row=row_idx, column=12, value=data["acad_bank"] or "")
-            ws.cell(row=row_idx, column=13, value="") # 엔화 결제 수량 칸
+            # G~N열: 수량 집계
+            ws.cell(row=row_idx, column=7, value=data["disc_cash"] or None)
+            ws.cell(row=row_idx, column=8, value=data["disc_bank"] or None)
+            ws.cell(row=row_idx, column=9, value=data["disc_jpy"] or None)
+            
+            ws.cell(row=row_idx, column=10, value=data["norm_cash"] or None)
+            ws.cell(row=row_idx, column=11, value=data["norm_bank"] or None)
+            ws.cell(row=row_idx, column=12, value=data["norm_jpy"] or None)
+            
+            ws.cell(row=row_idx, column=13, value=data["acad_cash"] or None)
+            ws.cell(row=row_idx, column=14, value=data["acad_bank"] or None)
 
-            # Col 14~19: 수식 계산 (1열씩 이동된 수식 적용)
-            ws.cell(row=row_idx, column=14, value=f"=M{row_idx}*F{row_idx}")
-            ws.cell(row=row_idx, column=15, value=f"=(G{row_idx}*{disc_price})+(I{row_idx}*{price})+(K{row_idx}*{acad_price})")
-            ws.cell(row=row_idx, column=16, value=f"=(H{row_idx}*{disc_price})+(J{row_idx}*{price})+(L{row_idx}*{acad_price})")
-            ws.cell(row=row_idx, column=17, value=f"=O{row_idx}+P{row_idx}")
+            # O~R열: 수식 적용
+            r = row_idx
+            ws.cell(row=r, column=15, value=f"=(I{r}+L{r})*F{r}") 
+            ws.cell(row=r, column=16, value=f"=(G{r}*{disc_price})+(J{r}*{price})+(M{r}*{acad_price})") 
+            ws.cell(row=r, column=17, value=f"=(H{r}*{disc_price})+(K{r}*{price})+(N{r}*{acad_price})") 
+            ws.cell(row=r, column=18, value=f"=P{r}+Q{r}") 
 
-            # R열(18): 포인트 수량
-            ws.cell(row=row_idx, column=18, value=data["point_qty"] or "")
-            # S열(19): 총 판매량 = SUM(G:M) + R
-            ws.cell(row=row_idx, column=19, value=f"=SUM(G{row_idx}:M{row_idx})+R{row_idx}")
+            # S~T열: 포인트 수량, 총 판매량
+            ws.cell(row=r, column=19, value=data["point_qty"] or None)
+            ws.cell(row=r, column=20, value=f"=SUM(G{r}:N{r})+S{r}")
 
             row_idx += 1
 
-        # 테두리 및 정렬 서식 적용 (1~19열 대상)
-        for r in range(1, row_idx):
-            for c in range(1, 20):
+        end_data_row = row_idx - 1
+
+        # --- 8. 데이터 영역 서식 지정 ---
+        for r in range(start_data_row, row_idx):
+            for c in range(1, 21):
                 cell = ws.cell(row=r, column=c)
                 cell.border = thin_border
-                if r >= 5:
-                    if c in [1, 2]: # 카테고리, 품목
-                        cell.alignment = Alignment(horizontal='left', vertical='center')
-                    elif c in range(3, 7): # 가격표
-                        cell.alignment = align_right
-                    elif c <= 13 or c in [18, 19]: # 수량 관련 항목
-                        cell.alignment = align_center
-                    else: # 금액 계산 항목
-                        cell.alignment = align_right
+                cell.font = font_data
+
+                if c in [1, 2]:
+                    cell.alignment = align_left
+                elif c in [3, 4, 5]:
+                    cell.alignment = align_right
+                    cell.number_format = '"₩"#,##0'
+                elif c == 6:
+                    cell.alignment = align_right
+                    cell.number_format = '"¥"#,##0'
+                elif c in range(7, 15) or c in [19, 20]:
+                    cell.alignment = align_center
+                    cell.number_format = '#,##0'
+                elif c == 15:
+                    cell.alignment = align_right
+                    cell.number_format = '"¥"#,##0'
+                else: # P, Q, R열
+                    cell.alignment = align_right
+                    cell.number_format = '"₩"#,##0'
+
+        # --- 9. 최하단 합계 행 추가 (엔화 & 원화 독립 합산) ---
+        sum_row = row_idx
+        ws.merge_cells(start_row=sum_row, start_column=1, end_row=sum_row, end_column=6)
+        ws.cell(row=sum_row, column=1, value="합 계").alignment = align_center
+
+        # G열 ~ T열 컬럼별 SUM 수식 적용
+        for col_idx in range(7, 21):
+            col_letter = get_column_letter(col_idx)
+            # 엑셀 SUM 수식 작성
+            ws.cell(row=sum_row, column=col_idx, value=f"=SUM({col_letter}{start_data_row}:{col_letter}{end_data_row})")
+
+        # 합계 행 서식 및 스타일 지정
+        for c in range(1, 21):
+            cell = ws.cell(row=sum_row, column=c)
+            cell.border = thin_border
+            cell.font = font_sum
+            cell.fill = fill_sum_row
+
+            if c in range(7, 15) or c in [19, 20]: # 수량 항목 합계
+                cell.alignment = align_center
+                cell.number_format = '#,##0'
+            elif c == 15: # 엔화 독립 합계
+                cell.alignment = align_right
+                cell.number_format = '"¥"#,##0'
+            elif c in [16, 17, 18]: # 원화 독립 합계 (현금, 계좌, 총합)
+                cell.alignment = align_right
+                cell.number_format = '"₩"#,##0'
 
         wb.save(export_file_path)
+        print(f"[Model] 엑셀 일일 판매 보고서 생성 완료: {export_file_path}")
         return True

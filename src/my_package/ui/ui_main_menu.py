@@ -72,14 +72,14 @@ class Ui_Form(object):
 
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
-        self.btn_japanese = QPushButton(Form)
-        self.btn_japanese.setObjectName(u"btn_japanese")
-        sizePolicy.setHeightForWidth(self.btn_japanese.sizePolicy().hasHeightForWidth())
-        self.btn_japanese.setSizePolicy(sizePolicy)
-        self.btn_japanese.setFont(font1)
-        self.btn_japanese.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.btn_korean_ja_cash = QPushButton(Form)
+        self.btn_korean_ja_cash.setObjectName(u"btn_korean_ja_cash")
+        sizePolicy.setHeightForWidth(self.btn_korean_ja_cash.sizePolicy().hasHeightForWidth())
+        self.btn_korean_ja_cash.setSizePolicy(sizePolicy)
+        self.btn_korean_ja_cash.setFont(font1)
+        self.btn_korean_ja_cash.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        self.gridLayout.addWidget(self.btn_japanese, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.btn_korean_ja_cash, 0, 1, 1, 1)
 
         self.btn_korean = QPushButton(Form)
         self.btn_korean.setObjectName(u"btn_korean")
@@ -90,16 +90,16 @@ class Ui_Form(object):
 
         self.gridLayout.addWidget(self.btn_korean, 0, 0, 1, 1)
 
-        self.btn_english = QPushButton(Form)
-        self.btn_english.setObjectName(u"btn_english")
-        self.btn_english.setEnabled(False)
-        sizePolicy.setHeightForWidth(self.btn_english.sizePolicy().hasHeightForWidth())
-        self.btn_english.setSizePolicy(sizePolicy)
-        self.btn_english.setFont(font1)
-        self.btn_english.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.btn_english.setCheckable(False)
+        self.btn_japanese = QPushButton(Form)
+        self.btn_japanese.setObjectName(u"btn_japanese")
+        self.btn_japanese.setEnabled(True)
+        sizePolicy.setHeightForWidth(self.btn_japanese.sizePolicy().hasHeightForWidth())
+        self.btn_japanese.setSizePolicy(sizePolicy)
+        self.btn_japanese.setFont(font1)
+        self.btn_japanese.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.btn_japanese.setCheckable(False)
 
-        self.gridLayout.addWidget(self.btn_english, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.btn_japanese, 0, 2, 1, 1)
 
 
         self.verticalLayout_4.addLayout(self.gridLayout)
@@ -130,9 +130,9 @@ class Ui_Form(object):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
         self.le_title.setText(QCoreApplication.translate("Form", u"\ud658\uc601\ud569\ub2c8\ub2e4", None))
         self.le_sub_title.setText(QCoreApplication.translate("Form", u"\uc8fc\ubb38 \uc2dc\uc791\uc744 \ub20c\ub7ec\uc8fc\uc138\uc694", None))
-        self.btn_japanese.setText(QCoreApplication.translate("Form", u"\u65e5\u672c\u8a9e", None))
+        self.btn_korean_ja_cash.setText(QCoreApplication.translate("Form", u"\ud55c\uad6d\uc5b4(\uc5d4\ud654)", None))
         self.btn_korean.setText(QCoreApplication.translate("Form", u"\ud55c\uad6d\uc5b4", None))
-        self.btn_english.setText(QCoreApplication.translate("Form", u"English", None))
+        self.btn_japanese.setText(QCoreApplication.translate("Form", u"\uc77c\ubcf8\uc5b4(\uc5d4\ud654)", None))
         self.btn_start_main_menu.setText(QCoreApplication.translate("Form", u"\uc8fc\ubb38 \uc2dc\uc791", None))
     # retranslateUi
 

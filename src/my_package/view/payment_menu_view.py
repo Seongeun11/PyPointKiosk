@@ -43,8 +43,9 @@ class PaymentMenuView(QWidget):
             lambda: self.view_go_back_requested_signal.emit("goback")
         )
 
-    def update_amounts(self, purchase_amt: int, discount_amt: int, final_pay_amt: int):
+    # [수정] unit 매개변수 추가 및 dynamic format 적용
+    def update_amounts(self, purchase_amt: int, discount_amt: int, final_pay_amt: int, unit: str = "원"):
         """금액 관련 UI 텍스트 동기화"""
-        self.ui.le_purchase_amount_num.setText(f"{purchase_amt:,}원")
-        self.ui.le_discount_amount_num.setText(f"-{discount_amt:,}원")
-        self.ui.le_payment_amount_num.setText(f"{final_pay_amt:,}원")
+        self.ui.le_purchase_amount_num.setText(f"{purchase_amt:,}{unit}")
+        self.ui.le_discount_amount_num.setText(f"-{discount_amt:,}{unit}")
+        self.ui.le_payment_amount_num.setText(f"{final_pay_amt:,}{unit}")

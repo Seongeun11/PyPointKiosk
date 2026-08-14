@@ -1,3 +1,4 @@
+# src/custom_widget/cart_item_widget.py
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton
 from PySide6.QtCore import Signal, Qt
 
@@ -8,14 +9,27 @@ class CartItemWidget(QWidget):
 
     def __init__(self, item_data: dict, parent=None):
         super().__init__(parent)
-        self.product_id = item_data["id"]
+        self.product_id = str(item_data.get("id", ""))
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(6, 4, 6, 4)
         layout.setSpacing(8)
 
-        # 1. 상품명 및 단가
-        lbl_info = QLabel(f"{item_data['name']}\n{item_data['price']:,}원")
+        # --- 통화 단위 처리 로직 (원화/엔화 대응) ---
+        unit = item_data.get("unit", "원")
+        currency = item_data.get("currency", "KRW")
+        price = item_data.get("price", 0)
+
+        # item_data에 이미 price_str 형태가 포함되어 있다면 우선 사용하고, 없으면 단위 기반 생성
+        if "price_str" in item_data and item_data["price_str"]:
+            formatted_price = item_data["price_str"]
+        elif currency == "JPY" or unit == "¥":
+            formatted_price = f"¥{price:,}"
+        else:
+            formatted_price = f"{price:,}원"
+
+        # 1. 상품명 및 단가 표시 (통화 단위 반영)
+        lbl_info = QLabel(f"{item_data.get('name', '')}\n{formatted_price}")
         lbl_info.setStyleSheet("font-size: 13px; font-weight: bold; color: #333333;")
 
         # 2. 수량 조절 버튼 및 표시
@@ -23,7 +37,7 @@ class CartItemWidget(QWidget):
         btn_minus.setFixedSize(32, 32)
         btn_minus.setStyleSheet("font-size: 16px; font-weight: bold;")
 
-        lbl_qty = QLabel(str(item_data["quantity"]))
+        lbl_qty = QLabel(str(item_data.get("quantity", 1)))
         lbl_qty.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl_qty.setFixedWidth(28)
         lbl_qty.setStyleSheet("font-size: 14px; font-weight: bold;")
@@ -37,7 +51,7 @@ class CartItemWidget(QWidget):
         btn_del.setFixedSize(32, 32)
         btn_del.setStyleSheet("background-color: #FF4D4D; color: white; font-weight: bold; font-size: 14px; border-radius: 4px;")
 
-        # 레이아웃배치
+        # 레이아웃 배치
         layout.addWidget(lbl_info, stretch=1)
         layout.addWidget(btn_minus)
         layout.addWidget(lbl_qty)
