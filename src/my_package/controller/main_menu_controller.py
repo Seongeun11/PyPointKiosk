@@ -40,6 +40,3 @@ class MainMenuController(QObject):
         self.view.update_btn_text(self.model.set_text(lang))
         print(f"[MainMenuController] 언어 변경 요청: {lang}")
         self.language_changed_signal.emit(lang)
-
-    
-        

@@ -125,6 +125,17 @@ class AdminMenuDialogView(QDialog):
         self.sb_price_ja.setSingleStep(50)
         self.sb_price_ja.setValue(300)
 
+        # [신규] 이미지 첨부 레이아웃
+        img_layout = QHBoxLayout()
+        self.le_image_path = QLineEdit()
+        self.le_image_path.setReadOnly(True)
+        self.le_image_path.setPlaceholderText("비어둘 경우 자동 생성(resources/images/{id}.png)")
+        self.btn_select_image = QPushButton("이미지 선택")
+        self.btn_select_image.clicked.connect(self._on_select_image)
+        img_layout.addWidget(self.le_image_path)
+        img_layout.addWidget(self.btn_select_image)
+
+
         form_layout.addRow("카테고리:", self.cb_category)
         form_layout.addRow("상품명(한국어):", self.le_name_ko)
         form_layout.addRow("가격(원화):", self.sb_price_ko)
@@ -337,21 +348,32 @@ class AdminMenuDialogView(QDialog):
                 self.model.remove_product(p_id)
                 self.load_product_table()
 
+    def _on_select_image(self):
+        """이미지 파일 선택 핸들러"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "상품 이미지 선택", "", "Image Files (*.png *.jpg *.jpeg)"
+        )
+        if file_path:
+            self.le_image_path.setText(file_path)
+            
     def _on_add_product(self):
         cat_id = self.cb_category.currentData()
         name_ko = self.le_name_ko.text().strip()
         price_ko = self.sb_price_ko.value()
         name_ja = self.le_name_ja.text().strip()
         price_ja = self.sb_price_ja.value()
+        image_path = self.le_image_path.text().strip() # 경로 추출
 
         if not cat_id or not name_ko:
             QMessageBox.warning(self, "경고", "카테고리와 한국어 상품명은 필수 입력 항목입니다.")
             return
 
-        if self.model.add_product(cat_id, name_ko, price_ko, name_ja, price_ja):
+        # image_path를 넘기면 지정된 경로 사용, 빈 문자열이면 모델에서 ID 기반 자동 지정
+        if self.model.add_product(cat_id, name_ko, price_ko, name_ja, price_ja, image_path):
             QMessageBox.information(self, "완료", "신규 상품이 등록되었습니다.")
             self.le_name_ko.clear()
             self.le_name_ja.clear()
+            self.le_image_path.clear()
             self.refresh_all_data()
         else:
             QMessageBox.warning(self, "오류", "상품 등록 실패")

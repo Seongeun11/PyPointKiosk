@@ -1,318 +1,41 @@
 {
   "categories": [
     {
-      "title": "new",
-      "name": "신제품",
-      "name_ja": "新商品",
-      "products": [
-        {
-          "id": 101,
-          "name": "흑임자라떼",
-          "name_ja": "黒ごまラテ",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/BlackSesameLatte.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 102,
-          "name": "스팸무스비",
-          "name_ja": "スパムむすび",
-          "price": 3000,
-          "price_jpy": 300,
-          "image": "resources/images/SpamMusubi.png",
-          "is_sold_out": false
-        }
-      ]
-    },
-    {
-      "title": "drink",
-      "name": "음료",
-      "name_ja": "ドリンク",
-      "products": [
-        {
-          "id": 201,
-          "name": "매실",
-          "name_ja": "梅",
-          "price": 3000,
-          "price_jpy": 300,
-          "image": "resources/images/plum.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 202,
-          "name": "자허블",
-          "name_ja": "グレープフルーツハニーブラックティー",
-          "price": 3000,
-          "price_jpy": 300,
-          "image": "resources/images/BlackTea.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 203,
-          "name": "아아",
-          "name_ja": "アイスアメリカーノ",
-          "price": 3000,
-          "price_jpy": 300,
-          "image": "resources/images/Americano.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 204,
-          "name": "히비스커스",
-          "name_ja": "ハイビスカスティー",
-          "price": 3000,
-          "price_jpy": 300,
-          "image": "resources/images/HibiscusTea.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 205,
-          "name": "밀크티",
-          "name_ja": "ミルクティー",
-          "price": 4000,
-          "price_jpy": 400,
-          "image": "resources/images/MilkTea.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 206,
-          "name": "쇼콜라모카",
-          "name_ja": "ショコラモカ",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/ChocolateMocha.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 207,
-          "name": "복숭아라떼",
-          "name_ja": "ピーチラテ",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/PeachLatte.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 208,
-          "name": "딸기라떼",
-          "name_ja": "いちごラテ",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/StrawberryLatte.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 209,
-          "name": "초코라떼",
-          "name_ja": "チョコラテ",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/ChocoLatte.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 210,
-          "name": "말차라떼",
-          "name_ja": "抹茶ラテ",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/MatchaLatte.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 211,
-          "name": "흑임자라떼",
-          "name_ja": "黒ごまラテ",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/BlackSesameLatte.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 212,
-          "name": "블루베리라떼",
-          "name_ja": "ブルーベリーラテ",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/BlueberryLatte.png",
-          "is_sold_out": false
-        }
-      ]
-    },
-    {
-      "title": "desert",
-      "name": "디저트",
-      "name_ja": "デザート",
-      "products": [
-        {
-          "id": 301,
-          "name": "커피젤리",
-          "name_ja": "コーヒーゼリー",
-          "price": 3000,
-          "price_jpy": 300,
-          "image": "resources/images/CoffeeJelly.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 302,
-          "name": "쫀득쿠키",
-          "name_ja": "もちもちクッキー",
-          "price": 4000,
-          "price_jpy": 400,
-          "image": "resources/images/ChewyCookie.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 303,
-          "name": "디아망쿠키",
-          "name_ja": "ディアマンクッキー",
-          "price": 2000,
-          "price_jpy": 200,
-          "image": "resources/images/DiamantCookie.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 304,
-          "name": "디아망쿠키세트",
-          "name_ja": "ディアマンクッキーセット",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/DiamantCookieSet.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 305,
-          "name": "바나나푸딩",
-          "name_ja": "バナナプリン",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/BananaPudding.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 306,
-          "name": "휘낭시에(3개)",
-          "name_ja": "フィナンシェ(3個)",
-          "price": 3000,
-          "price_jpy": 300,
-          "image": "resources/images/Financier.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 307,
-          "name": "휘낭시에(5개)",
-          "name_ja": "フィナンシェ(5個)",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/Financier.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 308,
-          "name": "버터떡(2개)",
-          "name_ja": "バター餅(2個)",
-          "price": 3000,
-          "price_jpy": 300,
-          "image": "resources/images/ButterRiceCake.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 309,
-          "name": "버터떡(4개)",
-          "name_ja": "バター餅(4個)",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "resources/images/ButterRiceCake.png",
-          "is_sold_out": false
-        },
-        {
-          "id": 310,
-          "name": "스팸무스비",
-          "name_ja": "スパムむすび",
-          "price": 3000,
-          "price_jpy": 300,
-          "image": "resources/images/SpamMusubi.png",
-          "is_sold_out": false
-        }
-      ]
-    },
-    {
-      "title": "donation",
-      "name": "감사헌금",
-      "name_ja": "感謝献金",
-      "products": [
-        {
-          "id": 312,
-          "name": "감사헌금",
-          "name_ja": "感謝献金",
-          "price": 1000,
-          "price_jpy": 100,
-          "image": "",
-          "is_sold_out": false
-        },
-        {
-          "id": 313,
-          "name": "감사헌금",
-          "name_ja": "感謝献金",
-          "price": 5000,
-          "price_jpy": 500,
-          "image": "",
-          "is_sold_out": false
-        },
-        {
-          "id": 314,
-          "name": "감사헌금",
-          "name_ja": "感謝献金",
-          "price": 10000,
-          "price_jpy": 1000,
-          "image": "",
-          "is_sold_out": false
-        },
-        {
-          "id": 315,
-          "name": "감사헌금",
-          "name_ja": "感謝献金",
-          "price": 50000,
-          "price_jpy": 5000,
-          "image": "",
-          "is_sold_out": false
-        },
-        {
-          "id": 316,
-          "name": "감사헌금",
-          "name_ja": "感謝献金",
-          "price": 100,
-          "price_jpy": 10,
-          "image": "",
-          "is_sold_out": false
-        },
-        {
-          "id": 317,
-          "name": "감사헌금",
-          "name_ja": "感謝献金",
-          "price": 10,
-          "price_jpy": 1,
-          "image": "",
-          "is_sold_out": false
-        }
-      ]
-    },
-    {
       "title": "1",
-      "name": "잔",
-      "name_ja": "잔",
+      "name": "신메뉴",
+      "name_ja": "신메뉴",
       "products": [
         {
-          "id": 318,
-          "name": "잔",
-          "name_ja": "잔",
+          "id": 1,
+          "name": "스팸무스비",
+          "name_ja": "스팸무스비",
           "price": 3000,
           "price_jpy": 300,
-          "image": "",
+          "image": "resources/images/1.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 2,
+          "name": "흑임자",
+          "name_ja": "흑임자",
+          "price": 5000,
+          "price_jpy": 500,
+          "image": "resources/images/2.png",
           "is_sold_out": false
         }
       ]
+    },
+    {
+      "title": "2",
+      "name": "보틀",
+      "name_ja": "보틀",
+      "products": []
+    },
+    {
+      "title": "3",
+      "name": "디저트",
+      "name_ja": "디저트",
+      "products": []
     }
   ]
 }

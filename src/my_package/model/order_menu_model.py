@@ -1,6 +1,7 @@
 # src\my_package\model\order_menu_model.py
 
 import os
+import shutil
 from typing import Optional
 from repositories.menu_json_repository import MenuJsonRepository
 from utils.image_manager import ImageManager
@@ -125,11 +126,24 @@ class OrderMenuModel:
     # --- 상품 관리 ---
     def add_product(self, category_id: str, prod_name: str, price: int,
                     prod_name_ja: str = "", price_jpy: Optional[int] = None, image_path: str = "") -> bool:
-        """신규 상품 추가 (한국어/일본어 및 원화/엔화 포함)"""
+        """신규 상품 추가 (한국어/일본어 및 원화/엔화 포함)(ID 기반 이미지 경로 자동 지정)"""
         for cat in self.categories:
             if str(cat.get("title")) == str(category_id) or str(cat.get("id")) == str(category_id):
                 existing_ids = [p["id"] for c in self.categories for p in c.get("products", []) if isinstance(p.get("id"), int)]
                 new_id = max(existing_ids) + 1 if existing_ids else 1
+
+               # 2. 경로 설정 (JSON용 상대경로 / 실제 파일작업용 절대경로)
+                rel_image_path = f"resources/images/{new_id}.png"
+                abs_image_path = os.path.join(self.base_dir, rel_image_path)
+
+                # 3. 이미지 파일 처리 로직
+                if image_path and os.path.exists(image_path):
+                    # 외부에서 지정한 이미지가 있으면 ID 규칙에 맞게 복사
+                    os.makedirs(os.path.dirname(abs_image_path), exist_ok=True)
+                    shutil.copy(image_path, abs_image_path)
+                else:
+                    # 지정된 이미지가 없으면 default.png 복사 또는 예시 이미지 생성
+                    ImageManager.ensure_default_sample_image(abs_image_path, prod_name)
 
                 new_prod = {
                     "id": new_id,
@@ -137,7 +151,7 @@ class OrderMenuModel:
                     "name_ja": prod_name_ja if prod_name_ja else prod_name,
                     "price": price,
                     "price_jpy": price_jpy if price_jpy is not None else int(price // 10),
-                    "image": image_path,
+                    "image": rel_image_path,  # JSON에는 항상 규격화된 상대 경로 저장
                     "is_sold_out": False
                 }
                 cat["products"].append(new_prod)
