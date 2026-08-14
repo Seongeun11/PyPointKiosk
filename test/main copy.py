@@ -1,9 +1,9 @@
 #src\my_package\main_test.py
 import sys
 from PySide6.QtWidgets import QApplication
-from model.order_menu_model import OrderMenuModel
-from view.order_menu_view import OrderMenuView
-from controller.order_menu_controller import OrderMenuController
+from src.my_package.model.order_menu_model import OrderMenuModel
+from src.my_package.view.order_menu_view import OrderMenuView
+from src.my_package.controller.order_menu_controller import OrderMenuController
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

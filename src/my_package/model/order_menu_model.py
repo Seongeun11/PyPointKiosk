@@ -125,24 +125,21 @@ class OrderMenuModel:
 
     # --- 상품 관리 ---
     def add_product(self, category_id: str, prod_name: str, price: int,
-                    prod_name_ja: str = "", price_jpy: Optional[int] = None, image_path: str = "") -> bool:
-        """신규 상품 추가 (한국어/일본어 및 원화/엔화 포함)(ID 기반 이미지 경로 자동 지정)"""
+                    prod_name_ja: str = "", price_jpy: Optional[int] = None, 
+                    image_path: str = "", discount_student: int = 0, discount_academy: int = 0) -> bool:
+        """신규 상품 추가 (수련생/아카데미 고정 할인액 포함)"""
         for cat in self.categories:
             if str(cat.get("title")) == str(category_id) or str(cat.get("id")) == str(category_id):
                 existing_ids = [p["id"] for c in self.categories for p in c.get("products", []) if isinstance(p.get("id"), int)]
                 new_id = max(existing_ids) + 1 if existing_ids else 1
 
-               # 2. 경로 설정 (JSON용 상대경로 / 실제 파일작업용 절대경로)
                 rel_image_path = f"resources/images/{new_id}.png"
                 abs_image_path = os.path.join(self.base_dir, rel_image_path)
 
-                # 3. 이미지 파일 처리 로직
                 if image_path and os.path.exists(image_path):
-                    # 외부에서 지정한 이미지가 있으면 ID 규칙에 맞게 복사
                     os.makedirs(os.path.dirname(abs_image_path), exist_ok=True)
                     shutil.copy(image_path, abs_image_path)
                 else:
-                    # 지정된 이미지가 없으면 default.png 복사 또는 예시 이미지 생성
                     ImageManager.ensure_default_sample_image(abs_image_path, prod_name)
 
                 new_prod = {
@@ -151,7 +148,9 @@ class OrderMenuModel:
                     "name_ja": prod_name_ja if prod_name_ja else prod_name,
                     "price": price,
                     "price_jpy": price_jpy if price_jpy is not None else int(price // 10),
-                    "image": rel_image_path,  # JSON에는 항상 규격화된 상대 경로 저장
+                    "discount_student": discount_student, # [신규]
+                    "discount_academy": discount_academy, # [신규]
+                    "image": rel_image_path,
                     "is_sold_out": False
                 }
                 cat["products"].append(new_prod)
@@ -164,8 +163,10 @@ class OrderMenuModel:
                             new_name: Optional[str] = None,
                             new_name_ja: Optional[str] = None,
                             new_price: Optional[int] = None,
-                            new_price_jpy: Optional[int] = None) -> bool:
-        """상품 정보 수정 (다국어 정보 포함)"""
+                            new_price_jpy: Optional[int] = None,
+                            new_disc_student: Optional[int] = None,
+                            new_disc_academy: Optional[int] = None) -> bool:
+        """상품 정보 수정 (할인 금액 수정 포함)"""
         target_prod = None
         current_cat = None
 
@@ -181,16 +182,13 @@ class OrderMenuModel:
         if not target_prod:
             return False
 
-        if new_name is not None:
-            target_prod["name"] = new_name
-        if new_name_ja is not None:
-            target_prod["name_ja"] = new_name_ja
-        if new_price is not None:
-            target_prod["price"] = new_price
-        if new_price_jpy is not None:
-            target_prod["price_jpy"] = new_price_jpy
+        if new_name is not None: target_prod["name"] = new_name
+        if new_name_ja is not None: target_prod["name_ja"] = new_name_ja
+        if new_price is not None: target_prod["price"] = new_price
+        if new_price_jpy is not None: target_prod["price_jpy"] = new_price_jpy
+        if new_disc_student is not None: target_prod["discount_student"] = new_disc_student
+        if new_disc_academy is not None: target_prod["discount_academy"] = new_disc_academy
 
-        # 카테고리 이동 처리
         if new_cat_name is not None and current_cat is not None and new_cat_name != current_cat.get("name"):
             dest_cat = next((c for c in self.categories if c["name"] == new_cat_name), None)
             if dest_cat:
@@ -309,7 +307,7 @@ class OrderMenuModel:
         self.cart.clear()
 
     def get_cart_items(self) -> list:
-        """현재 언어 및 통화 상태가 실시간 계산되어 반영된 장바구니 리스트 반환"""
+        """장바구니 항목 추출 시 상품의 고정 할인 금액 정보도 함께 동기화해서 반환"""
         items = []
         is_ja_lang = (self.current_lang == "ja")
         is_jpy_curr = (self.current_currency == "JPY")
@@ -323,13 +321,12 @@ class OrderMenuModel:
             if is_jpy_curr:
                 price = info.get("price_jpy") if info.get("price_jpy") is not None else int(info.get("price", 0) // 10)
                 unit = "¥"
-                total_price = price * qty
-                price_str = f"¥{total_price:,}"
             else:
                 price = info.get("price", 0)
                 unit = "원"
-                total_price = price * qty
-                price_str = f"{total_price:,}원"
+
+            total_price = price * qty
+            price_str = f"{unit}{total_price:,}" if unit == "¥" else f"{total_price:,}원"
 
             items.append({
                 "id": p_id,
@@ -337,6 +334,8 @@ class OrderMenuModel:
                 "price": price,
                 "quantity": qty,
                 "total_price": total_price,
+                "discount_student": info.get("discount_student", 0), # [신규]
+                "discount_academy": info.get("discount_academy", 0), # [신규]
                 "currency": self.current_currency,
                 "unit": unit,
                 "price_str": price_str

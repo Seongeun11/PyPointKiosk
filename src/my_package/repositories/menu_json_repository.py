@@ -1,4 +1,4 @@
-#src\my_package\repositories\menu_json_repository.py
+# src/my_package/repositories/menu_json_repository.py
 import json
 import os
 
@@ -7,11 +7,10 @@ class MenuJsonRepository:
 
     def __init__(self, base_dir: str, json_path: str):
         self.base_dir = base_dir
-        # [수정] 넘겨받은 경로가 상대 경로일 경우를 대비해 한번 더 안전하게 절대 경로화
         self.json_path = os.path.abspath(json_path) if not os.path.isabs(json_path) else json_path
 
     def load(self) -> list:
-        """JSON 데이터 읽기 및 절대 경로/다국어 기본값 보정"""
+        """JSON 데이터 읽기 및 할인 필드 기본값 보정"""
         if not os.path.exists(self.json_path):
             print(f"[Repository Error] JSON 파일이 존재하지 않습니다: {self.json_path}")
             return []
@@ -35,6 +34,12 @@ class MenuJsonRepository:
                         prod["name_ja"] = prod.get("name", "")
                     if "price_jpy" not in prod or prod["price_jpy"] is None:
                         prod["price_jpy"] = int(prod.get("price", 0) // 10)
+                        
+                    # [신규] 할인 금액 기본값 보정
+                    if "discount_student" not in prod:
+                        prod["discount_student"] = 0
+                    if "discount_academy" not in prod:
+                        prod["discount_academy"] = 0
 
             return categories
         except Exception as e:
@@ -42,7 +47,7 @@ class MenuJsonRepository:
             return []
 
     def save(self, categories: list) -> bool:
-        """메모리의 카테고리/상품 데이터를 JSON으로 직렬화 및 저장"""
+        """메모리의 카테고리/상품 데이터를 JSON으로 저장 (할인 금액 추가)"""
         save_categories = []
         for cat in categories:
             cat_copy = {
@@ -58,6 +63,8 @@ class MenuJsonRepository:
                     "name_ja": prod.get("name_ja", prod.get("name")),
                     "price": prod.get("price", 0),
                     "price_jpy": prod.get("price_jpy", int(prod.get("price", 0) // 10)),
+                    "discount_student": prod.get("discount_student", 0), # [신규] 수련생 고정 할인
+                    "discount_academy": prod.get("discount_academy", 0), # [신규] 아카데미 고정 할인
                     "image": prod.get("image", ""),
                     "is_sold_out": prod.get("is_sold_out", False)
                 }

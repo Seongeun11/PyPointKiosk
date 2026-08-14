@@ -66,9 +66,9 @@ class AdminMenuDialogView(QDialog):
 
         # 3. 상품 테이블 (횡 스크롤 지원 및 6개 컬럼 설정)
         self.table = QTableWidget()
-        self.table.setColumnCount(6)
+        self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels([
-            "ID", "카테고리", "상품명(한국어)", "가격(원화)", "상품명(일본어)", "가격(엔화)"
+            "ID", "카테고리", "상품명(한국어)", "가격(원화)", "수련생 할인", "아카데미 할인", "상품명(일본어)", "가격(엔화)"
         ])
         
         # [핵심] 횡 스크롤바 활성화 및 테이블 열 설정
@@ -76,12 +76,14 @@ class AdminMenuDialogView(QDialog):
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         
         # 각 컬럼 기본 너비 설정
-        self.table.setColumnWidth(0, 50)   # ID
-        self.table.setColumnWidth(1, 120)  # 카테고리
-        self.table.setColumnWidth(2, 160)  # 상품명(한국어)
-        self.table.setColumnWidth(3, 100)  # 가격(원화)
-        self.table.setColumnWidth(4, 160)  # 상품명(일본어)
-        self.table.setColumnWidth(5, 100)  # 가격(엔화)
+        self.table.setColumnWidth(0, 40)   # ID
+        self.table.setColumnWidth(1, 100)  # 카테고리
+        self.table.setColumnWidth(2, 130)  # 상품명(한국어)
+        self.table.setColumnWidth(3, 80)   # 가격(원화)
+        self.table.setColumnWidth(4, 90)   # 수련생 할인
+        self.table.setColumnWidth(5, 90)   # 아카데미 할인
+        self.table.setColumnWidth(6, 130)  # 상품명(일본어)
+        self.table.setColumnWidth(7, 80)   # 가격(엔화)
 
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         
@@ -117,6 +119,18 @@ class AdminMenuDialogView(QDialog):
         self.sb_price_ko.setSingleStep(500)
         self.sb_price_ko.setValue(3000)
 
+        # [신규] 고정 할인 설정 폼
+        self.sb_disc_student = QSpinBox()
+        self.sb_disc_student.setRange(0, 1000000)
+        self.sb_disc_student.setSingleStep(100)
+        #self.sb_disc_student.setSuffix(" 원")
+
+        self.sb_disc_academy = QSpinBox()
+        self.sb_disc_academy.setRange(0, 1000000)
+        self.sb_disc_academy.setSingleStep(100)
+        #self.sb_disc_academy.setSuffix(" 원")
+
+
         self.le_name_ja = QLineEdit()
         self.le_name_ja.setPlaceholderText("예: 黒ごまラテ (비어 둘 경우 한국어 표기)")
 
@@ -139,6 +153,8 @@ class AdminMenuDialogView(QDialog):
         form_layout.addRow("카테고리:", self.cb_category)
         form_layout.addRow("상품명(한국어):", self.le_name_ko)
         form_layout.addRow("가격(원화):", self.sb_price_ko)
+        form_layout.addRow("수련생 고정 할인액:", self.sb_disc_student)
+        form_layout.addRow("아카데미 고정 할인액:", self.sb_disc_academy)
         form_layout.addRow("상품명(일본어):", self.le_name_ja)
         form_layout.addRow("가격(엔화):", self.sb_price_ja)
 
@@ -196,7 +212,6 @@ class AdminMenuDialogView(QDialog):
             for p in cat.get("products", []):
                 row = self.table.rowCount()
                 self.table.insertRow(row)
-
                 is_sold_out = p.get("is_sold_out", False)
 
                 # 0: ID
@@ -204,7 +219,7 @@ class AdminMenuDialogView(QDialog):
                 id_item.setFlags(id_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 self.table.setItem(row, 0, id_item)
 
-                # 1: 카테고리 (콤보박스)
+                # 1: 카테고리 콤보박스
                 combo = NoScrollComboBox()
                 combo.addItems(cat_names)
                 combo.setCurrentText(cat_name)
@@ -213,22 +228,27 @@ class AdminMenuDialogView(QDialog):
                 )
                 self.table.setCellWidget(row, 1, combo)
 
-                # 2: 상품명(한국어) - 품절 시 [품절] 텍스트 태그 추가
+                # 2: 상품명(한국어)
                 name_ko = f"[품절] {p.get('name', '')}" if is_sold_out else str(p.get("name", ""))
                 self.table.setItem(row, 2, QTableWidgetItem(name_ko))
 
                 # 3: 가격(원화)
                 self.table.setItem(row, 3, QTableWidgetItem(str(p.get("price", 0))))
 
-                # 4: 상품명(일본어)
-                self.table.setItem(row, 4, QTableWidgetItem(str(p.get("name_ja", ""))))
+                # 4: 수련생 할인액 [신규]
+                self.table.setItem(row, 4, QTableWidgetItem(str(p.get("discount_student", 0))))
 
-                # 5: 가격(엔화)
-                self.table.setItem(row, 5, QTableWidgetItem(str(p.get("price_jpy", 0))))
+                # 5: 아카데미 할인액 [신규]
+                self.table.setItem(row, 5, QTableWidgetItem(str(p.get("discount_academy", 0))))
 
-                # 품절일 경우 해당 행 전체의 글씨 색상을 빨간색으로 변경
+                # 6: 상품명(일본어)
+                self.table.setItem(row, 6, QTableWidgetItem(str(p.get("name_ja", ""))))
+
+                # 7: 가격(엔화)
+                self.table.setItem(row, 7, QTableWidgetItem(str(p.get("price_jpy", 0))))
+
                 if is_sold_out:
-                    for col in range(6):
+                    for col in range(8):
                         item = self.table.item(row, col)
                         if item:
                             item.setForeground(Qt.GlobalColor.red)
@@ -244,48 +264,53 @@ class AdminMenuDialogView(QDialog):
         self.refresh_all_data()
 
     def _on_table_item_changed(self, item: QTableWidgetItem):
-        """상품 정보(한국어/일본어 이름, 원화/엔화 가격) 더블클릭 수정 핸들러"""
         row = item.row()
         col = item.column()
 
         p_id_item = self.table.item(row, 0)
-        if not p_id_item:
-            return
-
+        if not p_id_item: return
         p_id = p_id_item.text()
         new_val = item.text().strip()
 
-        # Col 2: 한국어 상품명 수정
-        if col == 2:
+        if col == 2:  # 한국어 상품명
             if not new_val:
                 QMessageBox.warning(self, "경고", "상품명은 비어 둘 수 없습니다.")
                 self.load_product_table()
                 return
             self.model.update_product_info(p_id, new_name=new_val)
 
-        # Col 3: 원화 가격 수정
-        elif col == 3:
-            clean_val = new_val.replace("원", "").replace(",", "").strip()
-            if not clean_val.isdigit():
+        elif col == 3:  # 원화 가격
+            if not new_val.isdigit():
                 QMessageBox.warning(self, "경고", "가격은 숫자만 입력해 주세요.")
                 self.load_product_table()
                 return
-            self.model.update_product_info(p_id, new_price=int(clean_val))
-            self.load_product_table()
+            self.model.update_product_info(p_id, new_price=int(new_val))
 
-        # Col 4: 일본어 상품명 수정
-        elif col == 4:
+        elif col == 4:  # 수련생 할인액 수정 [신규]
+            if not new_val.isdigit():
+                QMessageBox.warning(self, "경고", "할인 금액은 숫자만 입력해 주세요.")
+                self.load_product_table()
+                return
+            self.model.update_product_info(p_id, new_disc_student=int(new_val))
+
+        elif col == 5:  # 아카데미 할인액 수정 [신규]
+            if not new_val.isdigit():
+                QMessageBox.warning(self, "경고", "할인 금액은 숫자만 입력해 주세요.")
+                self.load_product_table()
+                return
+            self.model.update_product_info(p_id, new_disc_academy=int(new_val))
+
+        elif col == 6:  # 일본어 상품명
             self.model.update_product_info(p_id, new_name_ja=new_val)
 
-        # Col 5: 엔화 가격 수정
-        elif col == 5:
-            clean_val = new_val.replace("¥", "").replace("엔", "").replace(",", "").strip()
-            if not clean_val.isdigit():
+        elif col == 7:  # 엔화 가격
+            if not new_val.isdigit():
                 QMessageBox.warning(self, "경고", "엔화 가격은 숫자만 입력해 주세요.")
                 self.load_product_table()
                 return
-            self.model.update_product_info(p_id, new_price_jpy=int(clean_val))
-            self.load_product_table()
+            self.model.update_product_info(p_id, new_price_jpy=int(new_val))
+
+        self.load_product_table()
 
     def _on_add_category(self):
         cat_name = self.le_new_category.text().strip()
@@ -299,6 +324,29 @@ class AdminMenuDialogView(QDialog):
             self.refresh_all_data()
         else:
             QMessageBox.warning(self, "오류", "카테고리 추가에 실패했습니다.")
+
+    def _on_add_product(self):
+            cat_id = self.cb_category.currentData()
+            name_ko = self.le_name_ko.text().strip()
+            price_ko = self.sb_price_ko.value()
+            disc_student = self.sb_disc_student.value()
+            disc_academy = self.sb_disc_academy.value()
+            name_ja = self.le_name_ja.text().strip()
+            price_ja = self.sb_price_ja.value()
+    
+            if not cat_id or not name_ko:
+                QMessageBox.warning(self, "경고", "카테고리와 한국어 상품명은 필수 입력 항목입니다.")
+                return
+    
+            if self.model.add_product(cat_id, name_ko, price_ko, name_ja, price_ja, "", disc_student, disc_academy):
+                QMessageBox.information(self, "완료", "신규 상품이 등록되었습니다.")
+                self.le_name_ko.clear()
+                self.le_name_ja.clear()
+                self.sb_disc_student.setValue(0)
+                self.sb_disc_academy.setValue(0)
+                self.refresh_all_data()
+            else:
+                QMessageBox.warning(self, "오류", "상품 등록 실패")
 
     def _on_delete_category(self):
         cat_id = self.cb_delete_category.currentData()
@@ -356,24 +404,4 @@ class AdminMenuDialogView(QDialog):
         if file_path:
             self.le_image_path.setText(file_path)
             
-    def _on_add_product(self):
-        cat_id = self.cb_category.currentData()
-        name_ko = self.le_name_ko.text().strip()
-        price_ko = self.sb_price_ko.value()
-        name_ja = self.le_name_ja.text().strip()
-        price_ja = self.sb_price_ja.value()
-        image_path = self.le_image_path.text().strip() # 경로 추출
-
-        if not cat_id or not name_ko:
-            QMessageBox.warning(self, "경고", "카테고리와 한국어 상품명은 필수 입력 항목입니다.")
-            return
-
-        # image_path를 넘기면 지정된 경로 사용, 빈 문자열이면 모델에서 ID 기반 자동 지정
-        if self.model.add_product(cat_id, name_ko, price_ko, name_ja, price_ja, image_path):
-            QMessageBox.information(self, "완료", "신규 상품이 등록되었습니다.")
-            self.le_name_ko.clear()
-            self.le_name_ja.clear()
-            self.le_image_path.clear()
-            self.refresh_all_data()
-        else:
-            QMessageBox.warning(self, "오류", "상품 등록 실패")
+    

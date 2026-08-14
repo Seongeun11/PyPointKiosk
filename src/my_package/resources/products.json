@@ -7,19 +7,23 @@
       "products": [
         {
           "id": 1,
-          "name": "스팸무스비",
-          "name_ja": "스팸무스비",
+          "name": "스팸 무스비",
+          "name_ja": "스팸 무스비",
           "price": 3000,
           "price_jpy": 300,
+          "discount_student": 0,
+          "discount_academy": 0,
           "image": "resources/images/1.png",
           "is_sold_out": false
         },
         {
           "id": 2,
           "name": "흑임자",
-          "name_ja": "흑임자",
+          "name_ja": "kuro",
           "price": 5000,
-          "price_jpy": 500,
+          "price_jpy": 30,
+          "discount_student": 1000,
+          "discount_academy": 2000,
           "image": "resources/images/2.png",
           "is_sold_out": false
         }
@@ -29,13 +33,246 @@
       "title": "2",
       "name": "보틀",
       "name_ja": "보틀",
-      "products": []
+      "products": [
+        {
+          "id": 3,
+          "name": "매실",
+          "name_ja": "매실",
+          "price": 3000,
+          "price_jpy": 300,
+          "discount_student": 1000,
+          "discount_academy": 1000,
+          "image": "resources/images/3.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 4,
+          "name": "자허블",
+          "name_ja": "자허블",
+          "price": 3000,
+          "price_jpy": 300,
+          "discount_student": 1000,
+          "discount_academy": 1000,
+          "image": "resources/images/4.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 5,
+          "name": "아아",
+          "name_ja": "아아",
+          "price": 3000,
+          "price_jpy": 300,
+          "discount_student": 1000,
+          "discount_academy": 1000,
+          "image": "resources/images/5.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 6,
+          "name": "히비스커스",
+          "name_ja": "히비스커스",
+          "price": 3000,
+          "price_jpy": 300,
+          "discount_student": 1000,
+          "discount_academy": 1000,
+          "image": "resources/images/6.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 7,
+          "name": "밀크티",
+          "name_ja": "밀크티",
+          "price": 4000,
+          "price_jpy": 400,
+          "discount_student": 1000,
+          "discount_academy": 1000,
+          "image": "resources/images/7.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 8,
+          "name": "복숭아 요거트",
+          "name_ja": "복숭아 요거트",
+          "price": 5000,
+          "price_jpy": 500,
+          "discount_student": 1000,
+          "discount_academy": 2000,
+          "image": "resources/images/8.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 9,
+          "name": "딸기 라떼",
+          "name_ja": "딸기 라떼",
+          "price": 5000,
+          "price_jpy": 500,
+          "discount_student": 1000,
+          "discount_academy": 2000,
+          "image": "resources/images/9.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 10,
+          "name": "쇼콜라모카",
+          "name_ja": "쇼콜라모카",
+          "price": 5000,
+          "price_jpy": 500,
+          "discount_student": 1000,
+          "discount_academy": 2000,
+          "image": "resources/images/10.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 12,
+          "name": "말차라떼",
+          "name_ja": "말차라떼",
+          "price": 5000,
+          "price_jpy": 500,
+          "discount_student": 1000,
+          "discount_academy": 2000,
+          "image": "resources/images/12.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 11,
+          "name": "초코라떼",
+          "name_ja": "초코라뗴",
+          "price": 5000,
+          "price_jpy": 500,
+          "discount_student": 1000,
+          "discount_academy": 2000,
+          "image": "resources/images/11.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 13,
+          "name": "블루베리",
+          "name_ja": "블루베리",
+          "price": 5000,
+          "price_jpy": 500,
+          "discount_student": 1000,
+          "discount_academy": 2000,
+          "image": "resources/images/13.png",
+          "is_sold_out": false
+        }
+      ]
     },
     {
       "title": "3",
       "name": "디저트",
       "name_ja": "디저트",
-      "products": []
+      "products": [
+        {
+          "id": 14,
+          "name": "커피젤리",
+          "name_ja": "커피젤리",
+          "price": 3000,
+          "price_jpy": 300,
+          "discount_student": 0,
+          "discount_academy": 0,
+          "image": "resources/images/14.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 15,
+          "name": "쫀득쿠키",
+          "name_ja": "쫀득쿠키",
+          "price": 4000,
+          "price_jpy": 400,
+          "discount_student": 0,
+          "discount_academy": 0,
+          "image": "resources/images/15.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 16,
+          "name": "디아망쿠키",
+          "name_ja": "디아망쿠키",
+          "price": 2000,
+          "price_jpy": 200,
+          "discount_student": 0,
+          "discount_academy": 0,
+          "image": "resources/images/16.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 17,
+          "name": "디아망쿠기세트",
+          "name_ja": "디아망쿠기세트",
+          "price": 5000,
+          "price_jpy": 500,
+          "discount_student": 0,
+          "discount_academy": 0,
+          "image": "resources/images/17.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 18,
+          "name": "휘낭시에(3)",
+          "name_ja": "휘낭시에(3)",
+          "price": 3000,
+          "price_jpy": 300,
+          "discount_student": 0,
+          "discount_academy": 0,
+          "image": "resources/images/18.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 19,
+          "name": "휘낭시에(5)",
+          "name_ja": "휘낭시에(5)",
+          "price": 5000,
+          "price_jpy": 500,
+          "discount_student": 0,
+          "discount_academy": 0,
+          "image": "resources/images/19.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 20,
+          "name": "버터떡(2)",
+          "name_ja": "버터떡(2)",
+          "price": 3000,
+          "price_jpy": 300,
+          "discount_student": 0,
+          "discount_academy": 0,
+          "image": "resources/images/20.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 21,
+          "name": "버터떡(4)",
+          "name_ja": "버터떡(4)",
+          "price": 5000,
+          "price_jpy": 500,
+          "discount_student": 0,
+          "discount_academy": 0,
+          "image": "resources/images/21.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 22,
+          "name": "티라미수",
+          "name_ja": "티라미수",
+          "price": 6000,
+          "price_jpy": 600,
+          "discount_student": 0,
+          "discount_academy": 0,
+          "image": "resources/images/22.png",
+          "is_sold_out": false
+        },
+        {
+          "id": 23,
+          "name": "바나나푸딩",
+          "name_ja": "바나나푸딩",
+          "price": 5000,
+          "price_jpy": 500,
+          "discount_student": 0,
+          "discount_academy": 0,
+          "image": "resources/images/23.png",
+          "is_sold_out": false
+        }
+      ]
     }
   ]
 }

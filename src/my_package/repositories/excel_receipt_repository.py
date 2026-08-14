@@ -1,48 +1,40 @@
-#src\my_package\repositories\excel_receipt_repository.py
 import os
 import json
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Dict, Any, List
 
 import openpyxl
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from openpyxl.utils import get_column_letter  # Import 추가로 모듈 에러 해결
+from openpyxl.utils import get_column_letter
+
 
 class ReceiptRepositoryModel:
     """
     영수증 일자별 JSON 저장 및 엑셀 보고서 변환 비즈니스 Model
-    - 결제 내역을 영업일 기준 날짜별 파일(receipts_YYYY-MM-DD.json)로 나누어 저장 관리
-    - 새벽 02:00 이전 결제건은 전일(어제) 영업일 매출로 저장됨
+    수련생/아카데미 고정 할인액 정산 및 엑셀 연동 기능 지원
     """
-    
-    # 영업 마감 오프셋 (새벽 2시 영업 마감 기준)
     CLOSING_OFFSET_HOURS = 2
 
-    def __init__(self, base_receipts_dir="resources/receipts", products_path="resources/products.json"):
+    def __init__(self, base_receipts_dir: str = "resources/receipts", products_path: str = "resources/products.json"):
         self.base_dir = os.path.dirname(os.path.dirname(__file__))
         self.receipts_dir = os.path.join(self.base_dir, base_receipts_dir)
         self.products_path = os.path.join(self.base_dir, products_path)
-        
-        # 날짜별 영수증 폴더 생성
         os.makedirs(self.receipts_dir, exist_ok=True)
 
     def _get_business_date_str(self, dt: Optional[datetime] = None) -> str:
-        """영업일 기준 YYYY-MM-DD 문자열 반환 (새벽 2시 미만은 전일 날짜)"""
         if dt is None:
             dt = datetime.now()
         business_dt = dt - timedelta(hours=self.CLOSING_OFFSET_HOURS)
         return business_dt.strftime("%Y-%m-%d")
 
     def _get_daily_file_path(self, date_str: Optional[str] = None) -> str:
-        """지정한 날짜(YYYY-MM-DD) 또는 현재 영업일 날짜의 JSON 파일 경로 반환"""
         if not date_str:
             date_str = self._get_business_date_str()
         filename = f"receipts_{date_str}.json"
         return os.path.join(self.receipts_dir, filename)
 
-    def _load_receipts_by_path(self, file_path: str) -> list:
-        """특정 경로의 JSON 영수증 파일 로드"""
+    def _load_receipts_by_path(self, file_path: str) -> List[Dict[str, Any]]:
         if not os.path.exists(file_path):
             return []
         try:
@@ -55,14 +47,11 @@ class ReceiptRepositoryModel:
     def add_receipt(self, pay_type: str, cart_items: list, purchase_amount: int, 
                     discount_type: str, discount_amount: int, final_amount: int,
                     currency: str = "KRW") -> dict:
-        """결제 완료 시 영업일 기준 JSON 파일에 영수증 추가 (통화 단위 currency 명시 저장)"""
         now = datetime.now()
         business_date_str = self._get_business_date_str(now)
         daily_file_path = self._get_daily_file_path(business_date_str)
 
         receipts = self._load_receipts_by_path(daily_file_path)
-
-        # 당일 결제 건수 기준 순번 (1 ~ 999)
         next_id = (len(receipts) % 999) + 1
 
         receipt_data = {
@@ -70,16 +59,15 @@ class ReceiptRepositoryModel:
             "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
             "pay_type": pay_type,                     
             "discount_type": discount_type,           
-            "currency": currency,                       # 통화 정보 기록 ('JPY' / 'KRW')
+            "currency": currency,
             "purchase_amount": purchase_amount,
-            "discount_amount": discount_amount,
-            "final_amount": final_amount,
+            "discount_amount": discount_amount,       
+            "final_amount": final_amount,             
             "items": cart_items                       
         }
 
         receipts.append(receipt_data)
 
-        # 영업일자별 JSON 파일에 저장
         try:
             with open(daily_file_path, "w", encoding="utf-8") as f:
                 json.dump(receipts, f, ensure_ascii=False, indent=2)
@@ -90,34 +78,36 @@ class ReceiptRepositoryModel:
         return receipt_data
 
     def get_receipts_by_date(self, date_str: Optional[str] = None) -> list:
-        """특정 영업일 날짜(YYYY-MM-DD)의 영수증 목록 조회"""
         file_path = self._get_daily_file_path(date_str)
         return self._load_receipts_by_path(file_path)
 
-    def get_all_receipts(self) -> list:
-        """모든 날짜의 영수증 목록을 병합하여 조회"""
-        all_receipts = []
-        if os.path.exists(self.receipts_dir):
-            for filename in sorted(os.listdir(self.receipts_dir)):
-                if filename.startswith("receipts_") and filename.endswith(".json"):
-                    path = os.path.join(self.receipts_dir, filename)
-                    all_receipts.extend(self._load_receipts_by_path(path))
-        return all_receipts
-
     def export_to_excel(self, export_file_path: str, target_date: Optional[str] = None) -> bool:
         """
-        [완벽 이미지 매칭 로직]
-        - 이미지 양식(A~T열 레이아웃, 셀 병합, 헤더 구성)과 100% 동일한 일일 판매 보고서 생성
-        - 엔화/현금/계좌 수량 집계 및 정확한 엑셀 수식 작성
-        - 최하단에 엔화/원화 독립 매출 합계 행 추가
+        [수련생/아카데미/커스텀 할인 세분화 정산 엑셀 생성]
+        - 가격표: 정가, 수련생 할인액, 아카데미 할인액 명시
+        - 매출 수식: 가격표의 정가 기준 소계 산출 후, 하단 차감 행에서 실제 할인액 차감
         """
         if not target_date:
             target_date = self._get_business_date_str()
 
+        default_dir = os.path.join(self.base_dir, "resources/reports")
+        os.makedirs(default_dir, exist_ok=True)
+
+        if not export_file_path:
+            export_file_path = os.path.join(default_dir, f"일일_판매_보고서_{target_date}.xlsx")
+        else:
+            if not export_file_path.endswith(".xlsx"):
+                os.makedirs(export_file_path, exist_ok=True)
+                export_file_path = os.path.join(export_file_path, f"일일_판매_보고서_{target_date}.xlsx")
+            else:
+                base, ext = os.path.splitext(export_file_path)
+                if not base.endswith(target_date):
+                    export_file_path = f"{base}_{target_date}{ext}"
+
         receipts = self.get_receipts_by_date(target_date)
         
-        # 1. products.json Master ID 및 카테고리 정보 로드
-        stats = {}
+        # 1. Master 상품 목록 구조화 (products.json의 수련생/아카데미 할인액 읽기)
+        stats: Dict[str, Dict[str, Any]] = {}
         if os.path.exists(self.products_path):
             try:
                 with open(self.products_path, "r", encoding="utf-8") as f:
@@ -131,6 +121,8 @@ class ReceiptRepositoryModel:
                                 "name": p.get("name", ""),
                                 "category": c_name,
                                 "price": p.get("price", 0),
+                                "discount_student": p.get("discount_student", 0), # 수련생 할인액
+                                "discount_academy": p.get("discount_academy", 0), # 아카데미 할인액
                                 "disc_cash": 0, "disc_bank": 0, "disc_jpy": 0,
                                 "norm_cash": 0, "norm_bank": 0, "norm_jpy": 0,
                                 "acad_cash": 0, "acad_bank": 0,
@@ -139,12 +131,45 @@ class ReceiptRepositoryModel:
             except Exception as e:
                 print(f"[Model Error] 상품 목록 로드 실패: {e}")
 
-        # 2. 영수증 내역 집계
+        # 할인 금액 종류별 집계 변수 (KRW / JPY)
+        discount_totals = {
+            "student_cash_krw": 0, "student_bank_krw": 0, "student_jpy": 0,
+            "academy_cash_krw": 0, "academy_bank_krw": 0, "academy_jpy": 0,
+            "custom_cash_krw": 0,  "custom_bank_krw": 0,  "custom_jpy": 0
+        }
+
+        # 2. 영수증 JSON 내역 상세 집계
         for r in receipts:
-            p_type = r.get("pay_type")        # cash, bank, point 등
-            d_type = r.get("discount_type")   # student, academy, none
+            p_type = r.get("pay_type")        
+            d_type = r.get("discount_type")   
             currency = r.get("currency", "KRW")
+            r_discount_amt = r.get("discount_amount", 0)
             items = r.get("items", [])
+
+            # 할인 유형 및 결제 수단별 누적 차감액 집계
+            if d_type == "student":
+                if currency == "JPY": 
+                    discount_totals["student_jpy"] += r_discount_amt
+                elif p_type == "bank": 
+                    discount_totals["student_bank_krw"] += r_discount_amt
+                else: 
+                    discount_totals["student_cash_krw"] += r_discount_amt
+
+            elif d_type == "academy":
+                if currency == "JPY": 
+                    discount_totals["academy_jpy"] += r_discount_amt
+                elif p_type == "bank": 
+                    discount_totals["academy_bank_krw"] += r_discount_amt
+                else: 
+                    discount_totals["academy_cash_krw"] += r_discount_amt
+
+            elif r_discount_amt > 0:
+                if currency == "JPY": 
+                    discount_totals["custom_jpy"] += r_discount_amt
+                elif p_type == "bank": 
+                    discount_totals["custom_bank_krw"] += r_discount_amt
+                else: 
+                    discount_totals["custom_cash_krw"] += r_discount_amt
 
             for item in items:
                 prod_id = str(item.get("id", item.get("name")))
@@ -158,6 +183,8 @@ class ReceiptRepositoryModel:
                         "name": name,
                         "category": "기타", 
                         "price": item.get("price", 0),
+                        "discount_student": item.get("discount_student", 0),
+                        "discount_academy": item.get("discount_academy", 0),
                         "disc_cash": 0, "disc_bank": 0, "disc_jpy": 0,
                         "norm_cash": 0, "norm_bank": 0, "norm_jpy": 0,
                         "acad_cash": 0, "acad_bank": 0,
@@ -169,39 +196,35 @@ class ReceiptRepositoryModel:
 
                 if p_type == "point":
                     st["point_qty"] += qty
-                elif item_currency == "JPY": # 엔화 결제건
-                    if d_type == "student":
-                        st["disc_jpy"] += qty
-                    else:
-                        st["norm_jpy"] += qty
-                elif d_type == "student": # 수련생 할인
+                elif item_currency == "JPY":
+                    if d_type == "student": st["disc_jpy"] += qty
+                    else: st["norm_jpy"] += qty
+                elif d_type == "student":
                     if p_type == "cash": st["disc_cash"] += qty
                     elif p_type == "bank": st["disc_bank"] += qty
-                elif d_type == "academy": # 아카데미 할인
+                elif d_type == "academy":
                     if p_type == "cash": st["acad_cash"] += qty
                     elif p_type == "bank": st["acad_bank"] += qty
-                else: # 일반
+                else:
                     if p_type == "cash": st["norm_cash"] += qty
                     elif p_type == "bank": st["norm_bank"] += qty
 
-        # 3. 엑셀 워크북 및 시트 초기화
+        # 3. 엑셀 워크북 생성 및 스타일 정의
         wb = openpyxl.Workbook()
-        ws = wb.active
+        ws: Worksheet = wb.active  # type: ignore
+        assert ws is not None, "Worksheet 생성 실패"
 
-        if ws is None or not isinstance(ws, Worksheet):
-            ws = wb.create_sheet(title="일일 판매 보고서")
-        else:
-            ws.title = "일일 판매 보고서"
+        ws.title = "일일 판매 보고서"
 
-        # 4. 서식 및 스타일 정의
         font_title = Font(name="맑은 고딕", size=14, bold=True)
         font_header = Font(name="맑은 고딕", size=9, bold=True)
         font_data = Font(name="맑은 고딕", size=9)
-        font_sum = Font(name="맑은 고딕", size=10, bold=True) # 합계행 강조 폰트
+        font_sum = Font(name="맑은 고딕", size=10, bold=True)
         
         fill_green = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
         fill_sub_title = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
-        fill_sum_row = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid") # 합계행 연노랑 배경
+        fill_sum_row = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
+        fill_discount_row = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid")
 
         thin_border = Border(
             left=Side(style='thin'), right=Side(style='thin'),
@@ -211,7 +234,7 @@ class ReceiptRepositoryModel:
         align_right = Alignment(horizontal='right', vertical='center')
         align_left = Alignment(horizontal='left', vertical='center')
 
-        # --- 5. 타이틀 영역 (A1:N2 메인타이틀, O1:T2 날짜) ---
+        # 타이틀 레이아웃 (총 20개 컬럼 A~T 적용)
         ws.merge_cells("A1:N2")
         ws["A1"].value = "만물복귀 카페팀 일일 판매 보고서"
         ws["A1"].font = font_title
@@ -225,27 +248,21 @@ class ReceiptRepositoryModel:
         ws["O1"].fill = fill_green
         ws["O1"].alignment = align_center
 
-        for r in range(1, 3):
-            for c in range(1, 21):
-                ws.cell(row=r, column=c).border = thin_border
+        for r_num in range(1, 3):
+            for c_num in range(1, 21):
+                ws.cell(row=r_num, column=c_num).border = thin_border
 
-        # --- 6. 헤더 3행 & 4행 생성 ---
-        ws.merge_cells("A3:A4") # 카테고리
-        ws.merge_cells("B3:B4") # 품목
-        ws.merge_cells("C3:F3") # 가격표
-        ws.merge_cells("G3:I3") # 수련생할인가
-        ws.merge_cells("J3:L3") # 일반가
-        ws.merge_cells("M3:N3") # 아카데미할인가
-        ws.merge_cells("O3:O4") # 엔화 합계
-        ws.merge_cells("P3:P4") # 현금 합계
-        ws.merge_cells("Q3:Q4") # 계좌 합계
-        ws.merge_cells("R3:R4") # 총 합계
-        ws.merge_cells("S3:S4") # 아카데미 포인트
-        ws.merge_cells("T3:T4") # 총 판매량
+        # 컬럼 헤더 세팅
+        # A~B: 기본정보, C~F: 가격표(확장), G~I: 수련생할인 수량, J~L: 일반 수량, M~N: 아카데미 수량, O~T: 합계/판매량
+        ws.merge_cells("A3:A4"); ws.merge_cells("B3:B4")
+        ws.merge_cells("C3:F3")  # 가격표 확장 (정가, 엔화정가, 수련생할인, 아카데미할인)
+        ws.merge_cells("G3:I3"); ws.merge_cells("J3:L3"); ws.merge_cells("M3:N3")
+        ws.merge_cells("O3:O4"); ws.merge_cells("P3:P4"); ws.merge_cells("Q3:Q4")
+        ws.merge_cells("R3:R4"); ws.merge_cells("S3:S4"); ws.merge_cells("T3:T4")
 
         headers_row3 = [
             ("A3", "카테고리"), ("B3", "품목"), ("C3", "가격표"), 
-            ("G3", "수련생할인가"), ("J3", "일반가"), ("M3", "아카데미할인가"), 
+            ("G3", "수련생 할인"), ("J3", "일반"), ("M3", "아카데미 할인"), 
             ("O3", "엔화 합계"), ("P3", "현금 합계"), ("Q3", "계좌 합계"), 
             ("R3", "총 합계"), ("S3", "아카데미 포인트"), ("T3", "총 판매량")
         ]
@@ -255,9 +272,8 @@ class ReceiptRepositoryModel:
             ws[cell_ref].alignment = align_center
             ws[cell_ref].fill = fill_sub_title
 
-        # 서브 헤더 (4행)
         sub_headers = {
-            "C4": "할인", "D4": "원", "E4": "아카데미", "F4": "엔",
+            "C4": "원화 정가", "D4": "엔화 정가", "E4": "수련생 할인액", "F4": "아카데미 할인액",
             "G4": "현금", "H4": "계좌", "I4": "엔화(현금)",
             "J4": "현금", "K4": "계좌", "L4": "엔화(현금)",
             "M4": "현금", "N4": "계좌"
@@ -268,11 +284,11 @@ class ReceiptRepositoryModel:
             ws[cell_ref].alignment = align_center
             ws[cell_ref].fill = fill_sub_title
 
-        for r in range(3, 5):
-            for c in range(1, 21):
-                ws.cell(row=r, column=c).border = thin_border
+        for r_num in range(3, 5):
+            for c_num in range(1, 21):
+                ws.cell(row=r_num, column=c_num).border = thin_border
 
-        # --- 7. 데이터 셀 채우기 (5행부터) ---
+        # 데이터 세부 행 채우기
         start_data_row = 5
         row_idx = start_data_row
 
@@ -280,21 +296,20 @@ class ReceiptRepositoryModel:
             category = data.get("category", "기타")
             name = data["name"]
             price = data["price"]
-            disc_price = int(price * 0.9)
-            acad_price = int(price * 0.85)
             jpy_price = int(round(price / 10))
+            disc_student = data.get("discount_student", 0)
+            disc_academy = data.get("discount_academy", 0)
 
-            # A~B열: 카테고리, 품목
             ws.cell(row=row_idx, column=1, value=category)
             ws.cell(row=row_idx, column=2, value=name)
             
-            # C~F열: 가격표
-            ws.cell(row=row_idx, column=3, value=disc_price)
-            ws.cell(row=row_idx, column=4, value=price)
-            ws.cell(row=row_idx, column=5, value=acad_price)
-            ws.cell(row=row_idx, column=6, value=jpy_price)
+            # 가격표 영역 (C~F)
+            ws.cell(row=row_idx, column=3, value=price)
+            ws.cell(row=row_idx, column=4, value=jpy_price)
+            ws.cell(row=row_idx, column=5, value=disc_student)
+            ws.cell(row=row_idx, column=6, value=disc_academy)
 
-            # G~N열: 수량 집계
+            # 수량 영역 (G~N)
             ws.cell(row=row_idx, column=7, value=data["disc_cash"] or None)
             ws.cell(row=row_idx, column=8, value=data["disc_bank"] or None)
             ws.cell(row=row_idx, column=9, value=data["disc_jpy"] or None)
@@ -306,74 +321,105 @@ class ReceiptRepositoryModel:
             ws.cell(row=row_idx, column=13, value=data["acad_cash"] or None)
             ws.cell(row=row_idx, column=14, value=data["acad_bank"] or None)
 
-            # O~R열: 수식 적용
-            r = row_idx
-            ws.cell(row=r, column=15, value=f"=(I{r}+L{r})*F{r}") 
-            ws.cell(row=r, column=16, value=f"=(G{r}*{disc_price})+(J{r}*{price})+(M{r}*{acad_price})") 
-            ws.cell(row=r, column=17, value=f"=(H{r}*{disc_price})+(K{r}*{price})+(N{r}*{acad_price})") 
-            ws.cell(row=r, column=18, value=f"=P{r}+Q{r}") 
-
-            # S~T열: 포인트 수량, 총 판매량
-            ws.cell(row=r, column=19, value=data["point_qty"] or None)
-            ws.cell(row=r, column=20, value=f"=SUM(G{r}:N{r})+S{r}")
+            # 정가 기준 매출 합계 수식 (O~T)
+            r_num = row_idx
+            ws.cell(row=r_num, column=15, value=f"=(I{r_num}+L{r_num})*D{r_num}")                  # O열: 엔화 합계 = (I+L)*D(엔화정가)
+            ws.cell(row=r_num, column=16, value=f"=(G{r_num}+J{r_num}+M{r_num})*C{r_num}")          # P열: 현금 합계 = (G+J+M)*C(원화정가)
+            ws.cell(row=r_num, column=17, value=f"=(H{r_num}+K{r_num}+N{r_num})*C{r_num}")          # Q열: 계좌 합계 = (H+K+N)*C(원화정가)
+            ws.cell(row=r_num, column=18, value=f"=P{r_num}+Q{r_num}")                              # R열: 총 합계 = P+Q
+            ws.cell(row=r_num, column=19, value=data["point_qty"] or None)                          # S열: 포인트 수량
+            ws.cell(row=r_num, column=20, value=f"=SUM(G{r_num}:N{r_num})+S{r_num}")                # T열: 총 판매량
 
             row_idx += 1
 
         end_data_row = row_idx - 1
 
-        # --- 8. 데이터 영역 서식 지정 ---
-        for r in range(start_data_row, row_idx):
-            for c in range(1, 21):
-                cell = ws.cell(row=r, column=c)
+        # 셀 표시 형식 지정
+        for r_num in range(start_data_row, row_idx):
+            for c_num in range(1, 21):
+                cell = ws.cell(row=r_num, column=c_num)
                 cell.border = thin_border
                 cell.font = font_data
 
-                if c in [1, 2]:
-                    cell.alignment = align_left
-                elif c in [3, 4, 5]:
-                    cell.alignment = align_right
-                    cell.number_format = '"₩"#,##0'
-                elif c == 6:
-                    cell.alignment = align_right
-                    cell.number_format = '"¥"#,##0'
-                elif c in range(7, 15) or c in [19, 20]:
-                    cell.alignment = align_center
-                    cell.number_format = '#,##0'
-                elif c == 15:
-                    cell.alignment = align_right
-                    cell.number_format = '"¥"#,##0'
-                else: # P, Q, R열
-                    cell.alignment = align_right
-                    cell.number_format = '"₩"#,##0'
+                if c_num in [1, 2]: cell.alignment = align_left
+                elif c_num in [3, 5, 6]: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
+                elif c_num == 4: cell.alignment = align_right; cell.number_format = '"¥"#,##0'
+                elif c_num in range(7, 15) or c_num in [19, 20]: cell.alignment = align_center; cell.number_format = '#,##0'
+                elif c_num == 15: cell.alignment = align_right; cell.number_format = '"¥"#,##0'
+                else: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
 
-        # --- 9. 최하단 합계 행 추가 (엔화 & 원화 독립 합산) ---
-        sum_row = row_idx
-        ws.merge_cells(start_row=sum_row, start_column=1, end_row=sum_row, end_column=6)
-        ws.cell(row=sum_row, column=1, value="합 계").alignment = align_center
+        # 4. 정가 기준 주문 소계 행
+        subtotal_row = row_idx
+        ws.merge_cells(start_row=subtotal_row, start_column=1, end_row=subtotal_row, end_column=6)
+        ws.cell(row=subtotal_row, column=1, value="주문 소계 (정가)").alignment = align_center
 
-        # G열 ~ T열 컬럼별 SUM 수식 적용
         for col_idx in range(7, 21):
             col_letter = get_column_letter(col_idx)
-            # 엑셀 SUM 수식 작성
-            ws.cell(row=sum_row, column=col_idx, value=f"=SUM({col_letter}{start_data_row}:{col_letter}{end_data_row})")
+            ws.cell(row=subtotal_row, column=col_idx, value=f"=SUM({col_letter}{start_data_row}:{col_letter}{end_data_row})")
 
-        # 합계 행 서식 및 스타일 지정
-        for c in range(1, 21):
-            cell = ws.cell(row=sum_row, column=c)
-            cell.border = thin_border
-            cell.font = font_sum
-            cell.fill = fill_sum_row
+        for c_num in range(1, 21):
+            cell = ws.cell(row=subtotal_row, column=c_num)
+            cell.border = thin_border; cell.font = font_sum; cell.fill = fill_sum_row
+            if c_num in range(7, 15) or c_num in [19, 20]: cell.alignment = align_center; cell.number_format = '#,##0'
+            elif c_num == 15: cell.alignment = align_right; cell.number_format = '"¥"#,##0'
+            elif c_num in [16, 17, 18]: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
 
-            if c in range(7, 15) or c in [19, 20]: # 수량 항목 합계
-                cell.alignment = align_center
-                cell.number_format = '#,##0'
-            elif c == 15: # 엔화 독립 합계
-                cell.alignment = align_right
-                cell.number_format = '"¥"#,##0'
-            elif c in [16, 17, 18]: # 원화 독립 합계 (현금, 계좌, 총합)
-                cell.alignment = align_right
-                cell.number_format = '"₩"#,##0'
+        # 5. 수련생 / 아카데미 / 기타 할인 종류별 차감 행 추가
+        disc_start_row = subtotal_row + 1
+        
+        # 5-1. 수련생 할인 차감
+        row_student = disc_start_row
+        ws.merge_cells(start_row=row_student, start_column=1, end_row=row_student, end_column=14)
+        ws.cell(row=row_student, column=1, value="수련생 할인 차감액").alignment = align_center
+        ws.cell(row=row_student, column=15, value=-discount_totals["student_jpy"])
+        ws.cell(row=row_student, column=16, value=-discount_totals["student_cash_krw"])  # P열 (현금 차감)
+        ws.cell(row=row_student, column=17, value=-discount_totals["student_bank_krw"])  # Q열 (계좌 차감)
+        ws.cell(row=row_student, column=18, value=f"=P{row_student}+Q{row_student}")
+
+        # 5-2. 아카데미 할인 차감
+        row_academy = disc_start_row + 1
+        ws.merge_cells(start_row=row_academy, start_column=1, end_row=row_academy, end_column=14)
+        ws.cell(row=row_academy, column=1, value="아카데미 할인 차감액").alignment = align_center
+        ws.cell(row=row_academy, column=15, value=-discount_totals["academy_jpy"])
+        ws.cell(row=row_academy, column=16, value=-discount_totals["academy_cash_krw"]) # P열 (현금 차감)
+        ws.cell(row=row_academy, column=17, value=-discount_totals["academy_bank_krw"]) # Q열 (계좌 차감)
+        ws.cell(row=row_academy, column=18, value=f"=P{row_academy}+Q{row_academy}")
+
+        # 5-3. 기타 커스텀 할인 차감
+        row_custom = disc_start_row + 2
+        ws.merge_cells(start_row=row_custom, start_column=1, end_row=row_custom, end_column=14)
+        ws.cell(row=row_custom, column=1, value="기타/커스텀 할인 차감액").alignment = align_center
+        ws.cell(row=row_custom, column=15, value=-discount_totals["custom_jpy"])
+        ws.cell(row=row_custom, column=16, value=-discount_totals["custom_cash_krw"])    # P열 (현금 차감)
+        ws.cell(row=row_custom, column=17, value=-discount_totals["custom_bank_krw"])    # Q열 (계좌 차감)
+        ws.cell(row=row_custom, column=18, value=f"=P{row_custom}+Q{row_custom}")
+
+        for r_num in range(disc_start_row, disc_start_row + 3):
+            for c_num in range(1, 21):
+                cell = ws.cell(row=r_num, column=c_num)
+                cell.border = thin_border; cell.font = font_sum; cell.fill = fill_discount_row
+                if c_num == 15: cell.alignment = align_right; cell.number_format = '"¥"#,##0'
+                elif c_num in [16, 17, 18]: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
+
+        # 6. 최종 실매출 합계 행 (정가 소계 + 할인 차감액)
+        final_row = disc_start_row + 3
+        ws.merge_cells(start_row=final_row, start_column=1, end_row=final_row, end_column=14)
+        ws.cell(row=final_row, column=1, value="최종 실매출 합계").alignment = align_center
+
+        ws.cell(row=final_row, column=15, value=f"=O{subtotal_row}+SUM(O{disc_start_row}:O{disc_start_row+2})")
+        ws.cell(row=final_row, column=16, value=f"=P{subtotal_row}+SUM(P{disc_start_row}:P{disc_start_row+2})")
+        ws.cell(row=final_row, column=17, value=f"=Q{subtotal_row}+SUM(Q{disc_start_row}:Q{disc_start_row+2})")
+        ws.cell(row=final_row, column=18, value=f"=R{subtotal_row}+SUM(R{disc_start_row}:R{disc_start_row+2})")
+        ws.cell(row=final_row, column=19, value=f"=S{subtotal_row}")
+        ws.cell(row=final_row, column=20, value=f"=T{subtotal_row}")
+
+        for c_num in range(1, 21):
+            cell = ws.cell(row=final_row, column=c_num)
+            cell.border = thin_border; cell.font = font_sum; cell.fill = fill_green
+            if c_num in [19, 20]: cell.alignment = align_center; cell.number_format = '#,##0'
+            elif c_num == 15: cell.alignment = align_right; cell.number_format = '"¥"#,##0'
+            elif c_num in [16, 17, 18]: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
 
         wb.save(export_file_path)
-        print(f"[Model] 엑셀 일일 판매 보고서 생성 완료: {export_file_path}")
+        print(f"[Model] 엑셀 보고서 내보내기 성공: {export_file_path}")
         return True

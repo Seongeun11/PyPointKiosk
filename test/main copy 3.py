@@ -1,10 +1,10 @@
 #src\my_package\main_test.py
 import sys
 from PySide6.QtWidgets import QApplication
-from model.main_menu_model import MainMenuModel
-from view.main_menu_view import MainMenuView
-from controller.main_menu_controller import MainMenuController
-from controller.main_controller import MainController
+from src.my_package.model.main_menu_model import MainMenuModel
+from src.my_package.view.main_menu_view import MainMenuView
+from src.my_package.controller.main_menu_controller import MainMenuController
+from src.my_package.controller.main_controller import MainController
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
