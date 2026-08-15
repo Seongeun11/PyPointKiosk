@@ -1,0 +1,208 @@
+#my_package\controller\main_controller.py
+from PySide6.QtWidgets import QMainWindow, QStackedWidget, QMessageBox
+
+# Login Controller
+#from controller.login_controller import LoginController
+
+# MainMenu MVC Components
+from my_package.view.main_menu_view import MainMenuView
+from my_package.model.main_menu_model import MainMenuModel
+from my_package.controller.main_menu_controller import MainMenuController
+
+# OrderMenu MVC Components
+from my_package.view.order_menu_view import OrderMenuView
+from my_package.model.order_menu_model import OrderMenuModel
+from my_package.controller.order_menu_controller import OrderMenuController
+
+# PaymentMenu MVC Components
+from my_package.view.payment_menu_view import PaymentMenuView
+from my_package.model.payment_menu_model import PaymentMenuModel
+from my_package.controller.payment_menu_controller import PaymentMenuController
+
+from my_package.view.receipt_menu_view import ReceiptMenuView
+from my_package.controller.receipt_menu_controller import ReceiptMenuController
+
+from my_package.utils.auth_manager import SupabaseGlobalContext
+
+
+class MainController(QMainWindow):
+    """
+    애플리케이션 전체 화면 전환(Navigation) 및 
+    각 MVC 모듈의 생명주기를 총괄하는 최상위 Root Controller
+    """
+    def __init__(self):
+        super().__init__()
+        self.selected_lang: str = "ko_krw"  # 기본값: 한국어 + 원화
+        self._init_window()
+        self._init_views()
+        self.switch_to_main_menu()
+
+    def _init_window(self):
+        """초기 창 설정 (로그인 화면 스펙)"""
+        self.setWindowTitle("아카데미 관리자전용 포스기 - 로그인")
+    def _init_views(self):
+            """화면 전환용 StackedWidget 설정 및 로그인 컨트롤러 연동"""
+            self.stack = QStackedWidget(self)
+            self.setCentralWidget(self.stack)
+    
+        
+    #def _init_views_test(self):
+    #    """화면 전환용 StackedWidget 설정 및 로그인 컨트롤러 연동"""
+    #    self.stack = QStackedWidget(self)
+    #    self.setCentralWidget(self.stack)
+
+        # 1. LoginController 생성 및 성공 콜백 연결
+    #    self.login_controller = LoginController(
+    #        stacked_widget=self.stack,
+    #        on_success=self.on_login_succeeded
+    #    )
+
+    def on_login_succeeded(self):
+        """로그인 성공 시 실행되는 메인 화면 전환 로직"""
+        # 1. 인증 세션 검증
+        supabase_client = SupabaseGlobalContext.get_client()
+        if supabase_client is None:
+            QMessageBox.critical(self, "오류", "인증 세션을 찾을 수 없습니다.")
+            return
+
+       
+
+        # 3. 메인 메뉴 화면(MainMenu)으로 이동
+        self.switch_to_main_menu()
+
+    def switch_to_main_menu(self):
+        """메인 메뉴 화면으로 전환 (Lazy Loading 적용)"""
+        if not hasattr(self, 'main_menu_view'):
+            self.main_menu_model = MainMenuModel()
+            self.main_menu_view = MainMenuView(parent=self)
+            self.main_menu_controller = MainMenuController(
+                model=self.main_menu_model,
+                view=self.main_menu_view
+            )
+            
+            # [시그널 연결] '시작하기' 클릭 시 주문 메뉴로 전환
+            self.main_menu_controller.start_order_requested_signal.connect(
+                self.switch_to_order_menu
+            )
+            
+
+            # [핵심 추가] 언어 변경 요청 시그널 연결
+            self.main_menu_controller.language_changed_signal.connect(
+                self.on_language_changed
+            )
+            
+            self.stack.addWidget(self.main_menu_view)
+
+        # UI 업데이트 및 화면 전환
+        self.setWindowTitle("아카데미 관리자전용 포스기 - 메인메뉴")
+        self.stack.setCurrentWidget(self.main_menu_view)
+
+    def on_language_changed(self, lang: str):
+        """[신규] 메인 메뉴에서 언어 변경 시 호출되는 핸들러"""
+        self.selected_lang = lang
+        
+        # OrderMenuController가 이미 인스턴스화되어 있다면 즉시 언어 적용 및 View 갱신
+        if hasattr(self, 'order_menu_controller'):
+            self.order_menu_controller.set_language(lang)
+
+    def switch_to_order_menu(self):
+        if not hasattr(self, 'order_menu_view'):
+            # 최상위 resources/products.json 경로 전달
+            self.order_menu_model = OrderMenuModel("resources/products.json")
+            self.order_menu_view = OrderMenuView(parent=self)
+            self.order_menu_controller = OrderMenuController(
+                model=self.order_menu_model,
+                view=self.order_menu_view
+            )
+            
+           # [수정] pay_requested_signal에서 lang_mode도 포함하여 전달받음
+            self.order_menu_controller.pay_requested_signal.connect(
+                self.switch_to_payment_menu
+            )
+            self.order_menu_controller.go_back_requested_signal.connect(
+                self.switch_to_main_menu
+            )            
+            
+            self.stack.addWidget(self.order_menu_view)
+
+        self.order_menu_controller.set_language(self.selected_lang)
+        self.setWindowTitle("아카데미 관리자전용 포스기 - 주문하기")
+        self.stack.setCurrentWidget(self.order_menu_view)
+
+
+    # [수정] lang_mode 파라미터 추가 수신
+    def switch_to_payment_menu(self, cart_items: list, total_price: int, lang_mode: str = "ko_krw"):
+        """OrderMenuView에서 결제 요청 시 cart_items, total_price, lang_mode를 받아 처리"""
+        if total_price <= 0 or not cart_items:
+            QMessageBox.warning(self, "알림", "장바구니에 담긴 상품이 없습니다.")
+            return
+
+        if not hasattr(self, 'payment_menu_view'):
+            self.payment_menu_model = PaymentMenuModel()
+            self.payment_menu_view = PaymentMenuView(parent=self)
+            
+            self.payment_menu_controller = PaymentMenuController(
+                model=self.payment_menu_model,
+                view=self.payment_menu_view
+            )
+            
+            self.payment_menu_controller.payment_completed_signal.connect(
+                self.on_payment_finished
+            )
+            self.payment_menu_controller.go_back_requested_signal.connect(
+                self.switch_to_order_menu
+            )             
+            self.stack.addWidget(self.payment_menu_view)
+
+        # [수정] 장바구니 목록, 총 금액과 함께 언어/통화 모드 전달
+        self.payment_menu_controller.init_payment_data(cart_items, total_price, lang_mode)
+
+        self.setWindowTitle("아카데미 관리자전용 포스기 - 결제하기")
+        self.stack.setCurrentWidget(self.payment_menu_view)
+    
+    def on_payment_finished(self, receipt_text: str):
+        """결제 완료 후 장바구니 비우기 및 메인 메뉴(또는 주문 메뉴) 복귀"""
+        #QMessageBox.information(self, "결제 완료", "결제가 성공적으로 완료되었습니다!")
+        self.switch_to_receipt_menu(receipt_text)
+                
+        # 장바구니 초기화
+        #if hasattr(self, 'order_menu_model'):
+        #    self.order_menu_model.clear_cart()
+        #    self.order_menu_controller.update_view()
+        #    """결제 완료 시 영수증 화면(ReceiptMenuView)으로 전환"""
+            
+        # 메인 메뉴 화면으로 복귀
+        #self.switch_to_main_menu()
+
+    def switch_to_receipt_menu(self, receipt_text: str):
+        """영수증 화면 생성 및 전환 (Lazy Loading)"""
+        if not hasattr(self, 'receipt_menu_view'):
+            # ReceiptModel이 별도로 필요 없다면 None으로 주입
+            self.receipt_menu_view = ReceiptMenuView(parent=self)
+            self.receipt_menu_controller = ReceiptMenuController(
+                model=None,
+                view=self.receipt_menu_view
+            )
+            
+            # 영수증 확인 완료 시 처리 연결
+            self.receipt_menu_controller.complete_requested_signal.connect(
+                self.on_receipt_confirmed
+            )
+            
+            self.stack.addWidget(self.receipt_menu_view)
+
+        # 뷰에 영수증 텍스트 전달
+        self.receipt_menu_controller.set_receipt_text(receipt_text)
+
+        self.setWindowTitle("아카데미 관리자전용 포스기 - 결제 완료")
+        self.stack.setCurrentWidget(self.receipt_menu_view)
+
+    def on_receipt_confirmed(self):
+        """영수증 확인 후 장바구니 비우기 및 메인 메뉴 복귀"""
+        # 장바구니 초기화
+        if hasattr(self, 'order_menu_model'):
+            self.order_menu_model.clear_cart()
+            self.order_menu_controller.update_view()
+        
+        # 메인 메뉴 화면으로 이동
+        self.switch_to_main_menu()
