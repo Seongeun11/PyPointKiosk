@@ -10,7 +10,12 @@ class OrderMenuModel:
     """메뉴 데이터, 다국어(한국어/일본어) 및 장바구니 비즈니스 로직 관리 Model"""
 
     def __init__(self, json_path: str):
-        self.base_dir = os.path.dirname(os.path.dirname(__file__))
+        # [수정] resources 폴더가 최상위에 위치하므로, base_dir을 프로젝트 최상위 루트 디렉터리로 설정
+        # __file__ -> order_menu_model.py
+        # os.path.dirname(__file__) -> my_package/model
+        # os.path.dirname(...) -> my_package
+        # os.path.dirname(...) -> 프로젝트 최상위 루트 폴더
+        self.base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         
         # 절대 경로와 상대 경로 결합 안전 보장
         if not os.path.isabs(json_path):

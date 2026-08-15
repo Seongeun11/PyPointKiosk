@@ -50,27 +50,7 @@ class AdminMenuDialogView(QDialog):
         self.btn_export_excel.clicked.connect(self._on_export_clicked)
         layout.addWidget(self.btn_export_excel)
 
-        # 2. 카테고리 관리 그룹박스
-        cat_group = QGroupBox("카테고리 관리")
-        cat_layout = QHBoxLayout(cat_group)
-
-        self.le_new_category = QLineEdit()
-        self.le_new_category.setPlaceholderText("새 카테고리명 입력")
-        self.btn_add_category = QPushButton("카테고리 추가")
-        self.btn_add_category.clicked.connect(self._on_add_category)
-
-        self.cb_delete_category = QComboBox()
-        self.btn_delete_category = QPushButton("카테고리 삭제")
-        self.btn_delete_category.setStyleSheet("background-color: #f44336; color: white;")
-        self.btn_delete_category.clicked.connect(self._on_delete_category)
-
-        cat_layout.addWidget(self.le_new_category)
-        cat_layout.addWidget(self.btn_add_category)
-        cat_layout.addWidget(QLabel(" | "))
-        cat_layout.addWidget(self.cb_delete_category)
-        cat_layout.addWidget(self.btn_delete_category)
         
-        layout.addWidget(cat_group)
 
         # 3. 상품 테이블 (횡 스크롤 지원 및 6개 컬럼 설정)
         self.table = QTableWidget()
@@ -116,6 +96,28 @@ class AdminMenuDialogView(QDialog):
         btn_layout.addWidget(self.btn_delete)
         layout.addLayout(btn_layout)
 
+        # 2. 카테고리 관리 그룹박스
+        cat_group = QGroupBox("카테고리 관리")
+        cat_layout = QHBoxLayout(cat_group)
+        
+        self.le_new_category = QLineEdit()
+        self.le_new_category.setPlaceholderText("새 카테고리명 입력")
+        self.btn_add_category = QPushButton("카테고리 추가")
+        self.btn_add_category.clicked.connect(self._on_add_category)
+        
+        self.cb_delete_category = QComboBox()
+        self.btn_delete_category = QPushButton("카테고리 삭제")
+        self.btn_delete_category.setStyleSheet("background-color: #f44336; color: white;")
+        self.btn_delete_category.clicked.connect(self._on_delete_category)
+        
+        cat_layout.addWidget(self.le_new_category)
+        cat_layout.addWidget(self.btn_add_category)
+        cat_layout.addWidget(QLabel(" | "))
+        cat_layout.addWidget(self.cb_delete_category)
+        cat_layout.addWidget(self.btn_delete_category)
+                
+        layout.addWidget(cat_group)
+        
         # 5. 신규 상품 추가 입력 폼 (다국어 및 엔화 지원)
         prod_group = QGroupBox("신규 상품 추가")
         form_layout = QFormLayout(prod_group)
@@ -468,5 +470,6 @@ class AdminMenuDialogView(QDialog):
             QMessageBox.warning(
                 self, 
                 "파일 없음", 
-                f"등록된 파일을 찾을 수 없습니다.\n경로: {abs_image_path}"
+                f"등록된 파일을 찾을 수 없습니다.\n경로: {abs_image_path}\n이미지를 새로 생성합니다."
             )
+            ImageManager.ensure_default_sample_image(abs_image_path, target_product.get("name", ""))

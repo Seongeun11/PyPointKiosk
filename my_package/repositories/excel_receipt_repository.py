@@ -322,15 +322,15 @@ class ReceiptExcelExporter:
         ws.cell(row=row_academy, column=18, value=f"=P{row_academy}+Q{row_academy}")
 
         # 5-3. 기타 커스텀 할인 차감
-        row_custom = disc_start_row + 2
-        ws.merge_cells(start_row=row_custom, start_column=1, end_row=row_custom, end_column=14)
-        ws.cell(row=row_custom, column=1, value="기타/커스텀 할인 차감액").alignment = align_center
-        ws.cell(row=row_custom, column=15, value=-discount_totals["custom_jpy"])
-        ws.cell(row=row_custom, column=16, value=-discount_totals["custom_cash_krw"])
-        ws.cell(row=row_custom, column=17, value=-discount_totals["custom_bank_krw"])
-        ws.cell(row=row_custom, column=18, value=f"=P{row_custom}+Q{row_custom}")
+        #row_custom = disc_start_row + 2
+        #ws.merge_cells(start_row=row_custom, start_column=1, end_row=row_custom, end_column=14)
+        #ws.cell(row=row_custom, column=1, value="기타/커스텀 할인 차감액").alignment = align_center
+        #ws.cell(row=row_custom, column=15, value=-discount_totals["custom_jpy"])
+        #ws.cell(row=row_custom, column=16, value=-discount_totals["custom_cash_krw"])
+        #ws.cell(row=row_custom, column=17, value=-discount_totals["custom_bank_krw"])
+        #ws.cell(row=row_custom, column=18, value=f"=P{row_custom}+Q{row_custom}")
 
-        for r_num in range(disc_start_row, disc_start_row + 3):
+        for r_num in range(disc_start_row, disc_start_row + 2):
             for c_num in range(1, 21):
                 cell = ws.cell(row=r_num, column=c_num)
                 cell.border = thin_border; cell.font = font_sum; cell.fill = fill_discount_row
@@ -338,14 +338,14 @@ class ReceiptExcelExporter:
                 elif c_num in [16, 17, 18]: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
 
         # 6. 최종 실매출 합계 행 (정가 소계 + 할인 차감액)
-        final_row = disc_start_row + 3
+        final_row = disc_start_row + 2
         ws.merge_cells(start_row=final_row, start_column=1, end_row=final_row, end_column=14)
         ws.cell(row=final_row, column=1, value="최종 실매출 합계").alignment = align_center
-
-        ws.cell(row=final_row, column=15, value=f"=O{subtotal_row}+SUM(O{disc_start_row}:O{disc_start_row+2})")
-        ws.cell(row=final_row, column=16, value=f"=P{subtotal_row}+SUM(P{disc_start_row}:P{disc_start_row+2})")
-        ws.cell(row=final_row, column=17, value=f"=Q{subtotal_row}+SUM(Q{disc_start_row}:Q{disc_start_row+2})")
-        ws.cell(row=final_row, column=18, value=f"=R{subtotal_row}+SUM(R{disc_start_row}:R{disc_start_row+2})")
+        disc_end_row = disc_start_row + 1
+        ws.cell(row=final_row, column=15, value=f"=O{subtotal_row}+SUM(O{disc_start_row}:O{disc_end_row})")
+        ws.cell(row=final_row, column=16, value=f"=P{subtotal_row}+SUM(P{disc_start_row}:P{disc_end_row})")
+        ws.cell(row=final_row, column=17, value=f"=Q{subtotal_row}+SUM(Q{disc_start_row}:Q{disc_end_row})")
+        ws.cell(row=final_row, column=18, value=f"=R{subtotal_row}+SUM(R{disc_start_row}:R{disc_end_row})")
         ws.cell(row=final_row, column=19, value=f"=S{subtotal_row}")
         ws.cell(row=final_row, column=20, value=f"=T{subtotal_row}")
 

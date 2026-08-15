@@ -11,9 +11,6 @@ class OrderMenuController(QObject):         # QObject 상속 추가
         super().__init__()
         self.model = model
         self.view = view
-        
-      
-        
         # View 이벤트 바인딩
         self.view.category_clicked_signal.connect(self.handle_category_click)
         self.view.product_clicked_signal.connect(self.handle_product_click)
