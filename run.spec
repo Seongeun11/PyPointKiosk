@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-
+#pyinstaller run.spec --clean
 import os
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 

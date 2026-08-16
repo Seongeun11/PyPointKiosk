@@ -9,8 +9,9 @@ from my_package.utils.path_utils import get_project_root
 class ReceiptRepositoryModel:
     """
     영수증 일자별 JSON 데이터 저장 및 조회 전담 Model
+    새벽 2시에 영업마감
     """
-    CLOSING_OFFSET_HOURS = 2
+    CLOSING_OFFSET_HOURS = 2 # 새벽 2시 마감 기준 설정
 
     def __init__(self, base_receipts_dir: str = "resources/receipts", products_path: str = "resources/products.json"):
         self.project_root = get_project_root()
@@ -30,6 +31,7 @@ class ReceiptRepositoryModel:
     def get_business_date_str(self, dt: Optional[datetime] = None) -> str:
         if dt is None:
             dt = datetime.now()
+        # 현재 시간에서 2시간을 차감하여 영업일자(Business Date) 계산
         business_dt = dt - timedelta(hours=self.CLOSING_OFFSET_HOURS)
         return business_dt.strftime("%Y-%m-%d")
 
