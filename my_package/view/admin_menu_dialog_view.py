@@ -24,7 +24,7 @@ class AdminMenuDialogView(QDialog):
         super().__init__(parent)
         self.model = model
         self.setWindowTitle("관리자 메뉴 - 상품 및 카테고리 관리")
-        self.resize(720, 720)  # 스크롤바 및 다국어 필드 가독성을 고려한 크기 조정
+        self.resize(820, 720)  # 스크롤바 및 다국어 필드 가독성을 고려한 크기 조정
         self.setWindowFlags(
             Qt.WindowType.Window | 
             Qt.WindowType.CustomizeWindowHint | 
