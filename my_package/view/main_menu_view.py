@@ -23,6 +23,7 @@ class MainMenuView(QWidget):
     def _init_ui(self):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+        self.setMinimumSize(1280, 720)
         # 버튼 별 시그널 슬롯 개별 연결
         self.ui.btn_start_main_menu.clicked.connect(self._handle_start_clicked)
         self.ui.btn_korean.clicked.connect(self.handle_korean_clicked)

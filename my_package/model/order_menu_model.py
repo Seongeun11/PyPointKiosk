@@ -120,7 +120,26 @@ class OrderMenuModel:
         self._validate_current_category_idx()
 
         return True, "카테고리가 삭제되었습니다."
+    # --- 카테고리 순서 변경 ---
+    def move_category_up(self, category_id: str) -> bool:
+        """선택한 카테고리를 한 칸 위로 이동"""
+        idx = next((i for i, c in enumerate(self.categories) if str(c.get("title", c.get("id"))) == str(category_id)), -1)
+        if idx > 0:
+            self.categories[idx], self.categories[idx - 1] = self.categories[idx - 1], self.categories[idx]
+            self.save_data()
+            return True
+        return False
 
+    def move_category_down(self, category_id: str) -> bool:
+        """선택한 카테고리를 한 칸 아래로 이동"""
+        idx = next((i for i, c in enumerate(self.categories) if str(c.get("title", c.get("id"))) == str(category_id)), -1)
+        if idx != -1 and idx < len(self.categories) - 1:
+            self.categories[idx], self.categories[idx + 1] = self.categories[idx + 1], self.categories[idx]
+            self.save_data()
+            return True
+        return False
+
+    
     def _validate_current_category_idx(self):
         """현재 카테고리 인덱스 유효성 검증 및 자동 보정"""
         if not self.categories:

@@ -106,6 +106,13 @@ class AdminMenuDialogView(QDialog):
         self.btn_add_category.clicked.connect(self._on_add_category)
         
         self.cb_delete_category = QComboBox()
+        self.btn_move_up = QPushButton("▲ 위로")
+        self.btn_move_down = QPushButton("▼ 아래로")
+        
+        # [추가] 순서 변경 버튼 클릭 시그널 연결
+        self.btn_move_up.clicked.connect(self._on_move_category_up)
+        self.btn_move_down.clicked.connect(self._on_move_category_down)
+
         self.btn_delete_category = QPushButton("카테고리 삭제")
         self.btn_delete_category.setStyleSheet("background-color: #f44336; color: white;")
         self.btn_delete_category.clicked.connect(self._on_delete_category)
@@ -114,6 +121,8 @@ class AdminMenuDialogView(QDialog):
         cat_layout.addWidget(self.btn_add_category)
         cat_layout.addWidget(QLabel(" | "))
         cat_layout.addWidget(self.cb_delete_category)
+        cat_layout.addWidget(self.btn_move_up)
+        cat_layout.addWidget(self.btn_move_down)
         cat_layout.addWidget(self.btn_delete_category)
                 
         layout.addWidget(cat_group)
@@ -380,6 +389,29 @@ class AdminMenuDialogView(QDialog):
                 self.refresh_all_data()
             else:
                 QMessageBox.warning(self, "삭제 불가", msg)
+
+    # 카테고리 순서 변경 버튼 이벤트 핸들러            
+    def _on_move_category_up(self):
+        cat_id = self.cb_delete_category.currentData()
+        if not cat_id:
+            return
+        if self.model.move_category_up(cat_id):
+            self.refresh_all_data()
+            # 데이터 갱신 후 변경된 카테고리 항목 재선택
+            idx = self.cb_delete_category.findData(cat_id)
+            if idx != -1:
+                self.cb_delete_category.setCurrentIndex(idx)
+
+    def _on_move_category_down(self):
+        cat_id = self.cb_delete_category.currentData()
+        if not cat_id:
+            return
+        if self.model.move_category_down(cat_id):
+            self.refresh_all_data()
+            # 데이터 갱신 후 변경된 카테고리 항목 재선택
+            idx = self.cb_delete_category.findData(cat_id)
+            if idx != -1:
+                self.cb_delete_category.setCurrentIndex(idx)
 
     def _get_selected_product_id(self):
         selected_rows = self.table.selectionModel().selectedRows()

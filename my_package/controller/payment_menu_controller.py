@@ -4,7 +4,7 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QDialog
 from datetime import datetime
 from my_package.repositories.receipt_json_repository import ReceiptRepositoryModel
-#from my_package.view.discount_dialog_view import DiscountDialog
+from my_package.view.discount_dialog_view import DiscountDialog
 
 class PaymentMenuController(QObject):
     payment_completed_signal = Signal(str)
@@ -30,6 +30,7 @@ class PaymentMenuController(QObject):
             "discounts": {
                 "student": "수련생 할인",
                 "academy": "아카데미 할인",
+                "coupon": "쿠폰 할인",
                 None: "없음"
             }
         },
@@ -51,6 +52,7 @@ class PaymentMenuController(QObject):
             "discounts": {
                 "student": "修練生割引",
                 "academy": "アカデミー割引",
+                "coupon": "クーポン割引",
                 None: "なし"
             }
         }
@@ -80,40 +82,46 @@ class PaymentMenuController(QObject):
     def handle_open_discount_dialog(self, discount_type: str):
         """
         [요구사항 반영 개편]
-        수련생/아카데미 버튼 클릭 시 팝업창(다이얼로그) 대신 
-        상품별 지정 고정 금액으로 즉시 결제액에 반영
+        수련생/아카데미 버튼 클릭 시  상품별 지정 고정 금액으로 즉시 결제액에 반영
+        쿠폰 버튼 클릭 시 모달 다이얼로그를 띄워 할인 금액 선택 및 버퍼링 적용
         """
-        # 고정 할인 적용 (토글 가능)
-        self.model.apply_fixed_discount(discount_type)
-        self.refresh_view()
-    #def handle_open_discount_dialog(self, discount_type: str):
-    #    """
-    #    방안 2: 모달 다이얼로그를 띄워 할인 금액 선택 및 버퍼링 적용
-    #    - [수정] PySide6 Enum 규격(QDialog.DialogCode.Accepted)을 적용하여 Attribute 오류 해결
-    #    """
-    #    is_ja = self._is_japanese()
-    #    if discount_type == "student":
-    #        title = "修練生 金額割引設定" if is_ja else "수련생 금액 할인 설정"
-    #    else:
-    #        title = "アカデミー 金額割引設定" if is_ja else "아카데미 금액 할인 설정"
+        if discount_type == "coupon":
+                    #self.model.togle_discount(discount_type)  # 쿠폰 할인 선택/해제 토글 처리           
+                    self.handle_open_coupon_dialog(discount_type)
+                    #print(f"[Controller] 쿠폰 할인 다이얼로그 호출 완료 - 현재 선택된 할인: {self.model.selected_discount_type}")
+        else:
+            # 고정 할인 적용 (토글 가능)
+            self.model.apply_fixed_discount(discount_type)
+            self.refresh_view()
+
+    def handle_open_coupon_dialog(self, discount_type: str):
+        """
+        방안 2: 모달 다이얼로그를 띄워 할인 금액 선택 및 버퍼링 적용
+        - [수정] PySide6 Enum 규격(QDialog.DialogCode.Accepted)을 적용하여 Attribute 오류 해결
+        """
+        
+        #if discount_type == "coupon":
+        is_ja = self._is_japanese()
+        title = "クーポン割引設定" if is_ja else "쿠폰 금액 할인 설정"
 
         # 1. 다이얼로그 생성 (현재 적용된 할인 정보 전달)
-    #    dialog = DiscountDialog(
-    #        title=title,
-    ##        purchase_amount=self.model.purchase_amount,
-    #        current_discount=self.model.discount_amount,
-    #        currency=self.model.currency,
-    #        parent=self.view
-    #    )
+        dialog = DiscountDialog(
+            title=title,
+            discount_type=discount_type,
+            purchase_amount=self.model.purchase_amount,
+            current_discount=self.model.discount_amount,
+            currency=self.model.currency,
+            parent=self.view
+           )
 
         # 2. PySide6 버전 안전성(Type Safety)을 확보한 DialogCode enum 비교
-    #    result = dialog.exec()
-    #    accepted_code = getattr(QDialog.DialogCode, "Accepted", 1)  # QDialog.DialogCode.Accepted = 1
+        result = dialog.exec()
+        accepted_code = getattr(QDialog.DialogCode, "Accepted", 1)  # QDialog.DialogCode.Accepted = 1
 
-    #    if result == accepted_code:
-    #        applied_amount = dialog.get_discount_amount()
-    #        self.model.set_custom_discount(discount_type, applied_amount)
-    #        self.refresh_view()
+        if result == accepted_code:
+            applied_amount = dialog.get_discount_amount()
+            self.model.set_custom_discount(discount_type, applied_amount)
+            self.refresh_view()
 
     def handle_clear_discount(self):
         """전체 할인 취소"""

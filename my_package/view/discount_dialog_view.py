@@ -15,12 +15,12 @@ class DiscountDialog(QDialog):
     PRESETS_KRW = [1000, 3000, 5000, 10000]
     PRESETS_JPY = [100, 300, 500, 1000]
 
-    def __init__(self, title: str, purchase_amount: int, current_discount: int = 0, currency: str = "KRW", parent=None):
+    def __init__(self, title: str, discount_type: str, purchase_amount: int, current_discount: int = 0, currency: str = "KRW", parent=None):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setMinimumSize(720, 720)
         self.setModal(True)
-
+        self.discount_type = discount_type  # 'student', 'academy', 'coupon' or None
         self.purchase_amount = purchase_amount
         self.accumulated_discount = current_discount  # 버퍼링용 임시 할인 금액
         self.currency = currency
@@ -133,18 +133,18 @@ class DiscountDialog(QDialog):
         )
         btn_apply.clicked.connect(self.accept)  # QDialog.Accepted 반환
 
-        btn_cancel = QPushButton("닫기/취소")
-        #btn_cancel.setMinimumSize(200, 200)
-        btn_cancel.setSizePolicy(
-                    QSizePolicy.Policy.Expanding, 
-                    QSizePolicy.Policy.Expanding
-                )
-        btn_cancel.clicked.connect(self.reject)  # QDialog.Rejected 반환
+        #btn_cancel = QPushButton("닫기/취소")
+        
+        #btn_cancel.setSizePolicy(
+        #            QSizePolicy.Policy.Expanding, 
+        #            QSizePolicy.Policy.Expanding
+        #        )
+        #btn_cancel.clicked.connect(self.reject)  # QDialog.Rejected 반환
 
         action_layout.addWidget(btn_reset)
         action_layout.addStretch()
         action_layout.addWidget(btn_apply)
-        action_layout.addWidget(btn_cancel)
+        #action_layout.addWidget(btn_cancel)
 
         layout.addLayout(action_layout)
 

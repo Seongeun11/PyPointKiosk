@@ -44,7 +44,7 @@ class PaymentMenuView(QWidget):
         self._connect_signals()
 
     def _init_ui(self):
-        
+        self.setMinimumSize(1280, 720)
         self.ui.btn_academy_point_payment.setEnabled(False)  # 초기에는 아카데미 포인트 결제 버튼 비활성화
         # [신규] 계좌이체 버튼 상단/하단 안내용 경고 라벨 동적 생성 (UI 파일에 없을 경우 대비)
         #if not hasattr(self.ui, "lbl_bank_notice"):
@@ -96,7 +96,7 @@ class PaymentMenuView(QWidget):
 
     def _setup_button_styles(self):
         """할인 버튼을 Checkable 속성으로 설정 및 스타일시트 적용"""
-        for btn_name in ["btn_student_discount", "btn_academy_discount"]:
+        for btn_name in ["btn_student_discount", "btn_academy_discount","btn_coupon"]:
             if hasattr(self.ui, btn_name):
                 btn = getattr(self.ui, btn_name)
                 btn.setCheckable(True)
@@ -112,6 +112,10 @@ class PaymentMenuView(QWidget):
         if hasattr(self.ui, "btn_academy_discount"):
             self.ui.btn_academy_discount.setChecked(active_discount_type == "academy")
 
+        if hasattr(self.ui,"btn_coupon"):
+            self.ui.btn_coupon.setChecked(active_discount_type == "coupon")
+
+
     def _connect_signals(self):
         # 할인 버튼 -> 다이얼로그 호출 시그널 연결
         if hasattr(self.ui, "btn_student_discount"):
@@ -122,7 +126,10 @@ class PaymentMenuView(QWidget):
             self.ui.btn_academy_discount.clicked.connect(
                 lambda: self.open_discount_dialog_signal.emit("academy")
             )
-
+        if hasattr(self.ui,"btn_coupon"):
+            self.ui.btn_coupon.clicked.connect(
+                        lambda: self.open_discount_dialog_signal.emit("coupon")
+                    )
         # 할인 취소 버튼
         if hasattr(self.ui, "btn_all_clear_discount"):
             self.ui.btn_all_clear_discount.clicked.connect(
@@ -153,8 +160,8 @@ class PaymentMenuView(QWidget):
 
     def _confirm_and_emit_payment(self, pay_type: str):
         """
-        [새로 추가된 로직]
         결제 수단 선택 시 다이얼로그(예/아니오) 출력 후 '예'를 누르면 시그널 발행
+        (버튼 크기 및 폰트 확장 적용)
         """
         # 현재 화면에 표시된 최종 결제 금액 텍스트 가져오기 (있는 경우)
         final_price_text = self.ui.le_payment_amount_num.text() if hasattr(self.ui, "le_payment_amount_num") else ""
@@ -171,19 +178,55 @@ class PaymentMenuView(QWidget):
         if "¥" in final_price_text:
             title = "決済の確認"
             message = f"[{pay_str}] で決済を進行しますか？\n最終決済金額: {final_price_text}"
+            yes_btn_text = "はい"
+            no_btn_text = "いいえ"
         else:
             title = "결제 확인"
             message = f"[{pay_str}] (으)로 결제를 진행하시겠습니까?\n최종 결제 금액: {final_price_text}"
+            yes_btn_text = "예"
+            no_btn_text = "아니오"
 
-        # 확인 다이얼로그(QMessageBox) 생성
-        reply = QMessageBox.question(
-            self,
-            title,
-            message,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No  # 기본 선택은 안전하게 '아니오'
-        )
+        # 1. QMessageBox 인스턴스 생성
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+        msg_box.setIcon(QMessageBox.Icon.Question)
 
-        # '예(Yes)' 선택 시에만 Controller로 결제 진행 시그널 전달
-        if reply == QMessageBox.StandardButton.Yes:
+        # 2. 버튼 추가 및 라벨 설정
+        yes_button = msg_box.addButton(yes_btn_text, QMessageBox.ButtonRole.YesRole)
+        no_button = msg_box.addButton(no_btn_text, QMessageBox.ButtonRole.NoRole)
+        msg_box.setDefaultButton(no_button)  # 기본 포커스는 '아니오'
+
+        # 3. 메시지 박스 및 버튼 스타일시트 적용 (버튼 크기 & 폰트 확대)
+        msg_box.setStyleSheet("""
+            QMessageBox {
+                background-color: #FFFFFF;
+            }
+            QLabel {
+                font-size: 16px;
+                font-weight: bold;
+                color: #333333;
+                padding: 10px;
+            }
+            QPushButton {
+                min-width: 110px;
+                min-height: 45px;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 6px;
+                border: 1px solid #CCCCCC;
+                background-color: #F5F5F5;
+            }
+            QPushButton:hover {
+                background-color: #E0E0E0;
+            }
+            QPushButton:pressed {
+                background-color: #D0D0D0;
+            }
+        """)
+
+        # 4. 다이얼로그 실행 및 응답 확인
+        msg_box.exec()
+
+        if msg_box.clickedButton() == yes_button:
             self.pay_type_requested_signal.emit(pay_type)

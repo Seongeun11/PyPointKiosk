@@ -6,7 +6,7 @@ class PaymentMenuModel:
     def __init__(self, purchase_amount: int = 0):
         self.purchase_amount = purchase_amount  # 총 구매 금액
         self.discount_amount = 0                # 할인 금액
-        self.selected_discount_type = None      # 'student', 'academy', None
+        self.selected_discount_type = None      # 'student', 'academy', 'coupon' or None
         self.cart_items = []                   # 장바구니 상세 정보 저장용 리스트
         self.currency = "KRW"                   # 기본 통화
         self.unit = "원"                        # 기본 단위
@@ -34,16 +34,19 @@ class PaymentMenuModel:
         self.discount_amount = min(discount_amount, self.purchase_amount)
         self.selected_discount_type = discount_type
 
+    def togle_discount(self, discount_type: str):
+        if self.selected_discount_type == discount_type:
+                    # 이미 선택된 할인을 한 번 더 누르면 토글(해제) 처리
+                    self.clear_discount()
+                    return
+        
     def apply_fixed_discount(self, discount_type: str):
         """
         [핵심 요구사항]
         장바구니 상품별 지정된 고정 할인 금액(수련생/아카데미)의 총합을 실시간 계산해 적용
         할인액이 0원이어도 클릭 시 할인 타입 선택/해제(토글)가 동작하도록 처리
         """
-        if self.selected_discount_type == discount_type:
-            # 이미 선택된 할인을 한 번 더 누르면 토글(해제) 처리
-            self.clear_discount()
-            return
+        self.togle_discount(discount_type)
 
         total_discount = 0
         for item in self.cart_items:
@@ -52,10 +55,12 @@ class PaymentMenuModel:
                 disc_per_unit = item.get("discount_student", 0)
             elif discount_type == "academy":
                 disc_per_unit = item.get("discount_academy", 0)
+            elif discount_type == "coupon":
+                            disc_per_unit = item.get("discount_coupon", 0)
             else:
                 disc_per_unit = 0
 
-            # 엔화 결제 모드 시 할인액 자동 환산 (1/10)
+            # 엔화 결제 모드 시 할인액 없음
             if self.currency == "JPY":
                 disc_per_unit = 0
 
@@ -85,6 +90,7 @@ class PaymentMenuModel:
         discount_names = {
             "student": "修練生割引" if self.currency == "JPY" else "수련생 할인",
             "academy": "アカデミー割引" if self.currency == "JPY" else "아카데미 할인",
+            "coupon": "クーポン割引" if self.currency == "JPY" else "쿠폰 할인",
             None: "なし" if self.currency == "JPY" else "없음"
         }
 

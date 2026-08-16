@@ -40,7 +40,7 @@ class OrderMenuView(QWidget):
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
-
+        self.setMinimumSize(1280, 720)
         # 4열 고정 규격
         self.GRID_COLS = 4
         self.GRID_ROWS = 3

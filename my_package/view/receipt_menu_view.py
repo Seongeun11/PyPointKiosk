@@ -12,6 +12,7 @@ class ReceiptMenuView(QWidget):
         super().__init__(parent)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+        self.setMinimumSize(1280, 720)
         self._connect_signals()
 
     def _connect_signals(self):
