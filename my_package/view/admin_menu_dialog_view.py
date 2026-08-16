@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, 
     QComboBox, QFormLayout, QMessageBox, QTableWidget, QTableWidgetItem,
-    QHeaderView, QLabel, QSpinBox, QGroupBox, QFileDialog
+    QHeaderView, QLabel, QSpinBox, QGroupBox, QFileDialog,QInputDialog
 )
 from PySide6.QtCore import Qt, Signal
 
@@ -106,6 +106,11 @@ class AdminMenuDialogView(QDialog):
         self.btn_add_category.clicked.connect(self._on_add_category)
         
         self.cb_delete_category = QComboBox()
+
+        # [신규 추가] 카테고리 수정 버튼
+        self.btn_edit_category = QPushButton("수정")
+        self.btn_edit_category.clicked.connect(self._on_edit_category)
+
         self.btn_move_up = QPushButton("▲ 위로")
         self.btn_move_down = QPushButton("▼ 아래로")
         
@@ -121,6 +126,7 @@ class AdminMenuDialogView(QDialog):
         cat_layout.addWidget(self.btn_add_category)
         cat_layout.addWidget(QLabel(" | "))
         cat_layout.addWidget(self.cb_delete_category)
+        cat_layout.addWidget(self.btn_edit_category)      # [추가]
         cat_layout.addWidget(self.btn_move_up)
         cat_layout.addWidget(self.btn_move_down)
         cat_layout.addWidget(self.btn_delete_category)
@@ -389,7 +395,45 @@ class AdminMenuDialogView(QDialog):
                 self.refresh_all_data()
             else:
                 QMessageBox.warning(self, "삭제 불가", msg)
+    # ==========================================
+    # [신규 추가] 카테고리 이름 변경 이벤트 핸들러
+    # ==========================================
+    def _on_edit_category(self):
+        cat_id = self.cb_delete_category.currentData()
+        current_name = self.cb_delete_category.currentText()
 
+        if not cat_id:
+            QMessageBox.warning(self, "경고", "수정할 카테고리를 선택해주세요.")
+            return
+
+        # 1. 한국어 이름 입력 받기
+        new_name, ok1 = QInputDialog.getText(
+            self, "카테고리명 수정", "새 카테고리명(한국어)을 입력하세요:", QLineEdit.EchoMode.Normal, current_name
+        )
+        if not ok1 or not new_name.strip():
+            return
+
+        # 2. 일본어 이름 입력 받기 (선택 사항)
+        target_cat = next((c for c in self.model.categories if str(c.get("title")) == str(cat_id)), {})
+        current_name_ja = target_cat.get("name_ja", new_name)
+
+        new_name_ja, ok2 = QInputDialog.getText(
+            self, "카테고리명 수정 (일본어)", "새 카테고리명(일본어)을 입력하세요:", QLineEdit.EchoMode.Normal, current_name_ja
+        )
+        if not ok2:
+            new_name_ja = current_name_ja
+
+        # 3. Model 데이터 수정 처리
+        if self.model.update_category(cat_id, new_name, new_name_ja):
+            QMessageBox.information(self, "완료", f"카테고리명이 '{new_name}'(으)로 변경되었습니다.")
+            self.refresh_all_data()
+            
+            # 변경한 항목 재선택
+            idx = self.cb_delete_category.findData(cat_id)
+            if idx != -1:
+                self.cb_delete_category.setCurrentIndex(idx)
+        else:
+            QMessageBox.warning(self, "오류", "카테고리명 변경에 실패했습니다.")
     # 카테고리 순서 변경 버튼 이벤트 핸들러            
     def _on_move_category_up(self):
         cat_id = self.cb_delete_category.currentData()

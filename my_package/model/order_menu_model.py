@@ -5,17 +5,13 @@ import shutil
 from typing import Optional
 from my_package.repositories.menu_json_repository import MenuJsonRepository
 from my_package.utils.image_manager import ImageManager
-
+from my_package.utils.path_utils import get_project_root
 class OrderMenuModel:
     """메뉴 데이터, 다국어(한국어/일본어) 및 장바구니 비즈니스 로직 관리 Model"""
 
     def __init__(self, json_path: str):
-        # [수정] resources 폴더가 최상위에 위치하므로, base_dir을 프로젝트 최상위 루트 디렉터리로 설정
-        # __file__ -> order_menu_model.py
-        # os.path.dirname(__file__) -> my_package/model
-        # os.path.dirname(...) -> my_package
-        # os.path.dirname(...) -> 프로젝트 최상위 루트 폴더
-        self.base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        # path_utils를 통해 프로젝트/EXE 실행 위치 루트 획득
+        self.base_dir = get_project_root()
         
         # 절대 경로와 상대 경로 결합 안전 보장
         if not os.path.isabs(json_path):
@@ -181,7 +177,7 @@ class OrderMenuModel:
                 self.save_data()
                 return True
         return False
-
+    
     def update_product_info(self, product_id: str,
                             new_cat_name: Optional[str] = None,
                             new_name: Optional[str] = None,
@@ -262,7 +258,26 @@ class OrderMenuModel:
     def set_category(self, idx: int):
         if 0 <= idx < len(self.categories):
             self.current_category_idx = idx
+            
+    # --- 카테고리 관리 ---
+    def update_category(self, category_id: str, new_name: str, new_name_ja: str = "") -> bool:
+        """카테고리 이름 변경 (한국어 / 일본어)"""
+        if not new_name.strip():
+            return False
 
+        for cat in self.categories:
+            if str(cat.get("title")) == str(category_id) or str(cat.get("id")) == str(category_id):
+                cat["name"] = new_name.strip()
+                # 일본어명이 지정되지 않았다면 기존 값 유지 또는 한국어명 지정
+                if new_name_ja.strip():
+                    cat["name_ja"] = new_name_ja.strip()
+                elif "name_ja" not in cat or not cat["name_ja"]:
+                    cat["name_ja"] = new_name.strip()
+
+                self.save_data()
+                return True
+        return False
+    
     def get_current_products(self) -> list:
         """현재 선택된 카테고리의 상품 정보 및 다국어/다중통화 계산된 정보 반환"""
         if not self.categories:

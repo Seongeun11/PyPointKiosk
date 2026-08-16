@@ -1,6 +1,6 @@
 #my_package\view\main_menu_view.py
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
-from PySide6.QtCore import Signal, Qt
+from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import Signal
 
 # 자동 생성된 UI 클래스 import
 from my_package.ui.ui_main_menu import Ui_Form

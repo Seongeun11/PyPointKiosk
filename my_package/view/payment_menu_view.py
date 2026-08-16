@@ -1,5 +1,5 @@
 #my_package\view\payment_menu_view.py
-from PySide6.QtWidgets import QWidget, QPushButton, QMessageBox, QLabel, QBoxLayout
+from PySide6.QtWidgets import QWidget,QMessageBox
 from PySide6.QtCore import Signal, Qt
 from my_package.ui.ui_payment_menu import Ui_Form
 

@@ -1,7 +1,6 @@
 #my_package\utils\image_manager.py
 import os
 import shutil
-from typing import Optional
 from PySide6.QtGui import QPixmap, QPainter, QColor, QFont
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon                                                                                                                                         
