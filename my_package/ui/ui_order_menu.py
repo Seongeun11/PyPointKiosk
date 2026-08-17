@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'order_menu_fhd.ui'
+## Form generated from reading UI file 'order_menu.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.11.1
 ##
@@ -15,8 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QLayout,
-    QLineEdit, QListWidget, QListWidgetItem, QPushButton,
+from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QLabel,
+    QLayout, QListWidget, QListWidgetItem, QPushButton,
     QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_Form(object):
@@ -40,10 +40,8 @@ class Ui_Form(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.btn_title = QPushButton(Form)
         self.btn_title.setObjectName(u"btn_title")
-        font1 = QFont()
-        font1.setPointSize(30)
-        font1.setBold(False)
-        self.btn_title.setFont(font1)
+        sizePolicy.setHeightForWidth(self.btn_title.sizePolicy().hasHeightForWidth())
+        self.btn_title.setSizePolicy(sizePolicy)
         self.btn_title.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.btn_title.setStyleSheet(u"background-color: transparent; border: none;")
 
@@ -80,102 +78,54 @@ class Ui_Form(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.lst_my_order_details.sizePolicy().hasHeightForWidth())
         self.lst_my_order_details.setSizePolicy(sizePolicy1)
-        self.lst_my_order_details.setFont(font)
 
         self.horizontalLayout_3.addWidget(self.lst_my_order_details)
 
         self.gridLayout_2 = QGridLayout()
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
-        self.le_time_num = QLineEdit(Form)
-        self.le_time_num.setObjectName(u"le_time_num")
-        sizePolicy.setHeightForWidth(self.le_time_num.sizePolicy().hasHeightForWidth())
-        self.le_time_num.setSizePolicy(sizePolicy)
-        font2 = QFont()
-        font2.setPointSize(20)
-        font2.setBold(False)
-        font2.setKerning(True)
-        self.le_time_num.setFont(font2)
-        self.le_time_num.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
-        self.le_time_num.setMouseTracking(False)
-        self.le_time_num.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.le_time_num.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
-        self.le_time_num.setAutoFillBackground(False)
-        self.le_time_num.setStyleSheet(u"background-color: transparent; border: none;")
-        self.le_time_num.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lb_select_products = QLabel(Form)
+        self.lb_select_products.setObjectName(u"lb_select_products")
+        self.lb_select_products.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_2.addWidget(self.le_time_num, 1, 1, 1, 2)
+        self.gridLayout_2.addWidget(self.lb_select_products, 2, 1, 1, 2)
+
+        self.lb_total_price = QLabel(Form)
+        self.lb_total_price.setObjectName(u"lb_total_price")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.lb_total_price.sizePolicy().hasHeightForWidth())
+        self.lb_total_price.setSizePolicy(sizePolicy2)
+        self.lb_total_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.gridLayout_2.addWidget(self.lb_total_price, 3, 1, 1, 2)
 
         self.btn_payment = QPushButton(Form)
         self.btn_payment.setObjectName(u"btn_payment")
-        sizePolicy.setHeightForWidth(self.btn_payment.sizePolicy().hasHeightForWidth())
-        self.btn_payment.setSizePolicy(sizePolicy)
-        self.btn_payment.setMinimumSize(QSize(0, 150))
-        self.btn_payment.setFont(font)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.btn_payment.sizePolicy().hasHeightForWidth())
+        self.btn_payment.setSizePolicy(sizePolicy3)
+        self.btn_payment.setMinimumSize(QSize(0, 0))
         self.btn_payment.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
         self.btn_payment.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.btn_payment.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
-        self.gridLayout_2.addWidget(self.btn_payment, 4, 1, 1, 3)
-
-        self.le_time_counter = QLineEdit(Form)
-        self.le_time_counter.setObjectName(u"le_time_counter")
-        sizePolicy.setHeightForWidth(self.le_time_counter.sizePolicy().hasHeightForWidth())
-        self.le_time_counter.setSizePolicy(sizePolicy)
-        self.le_time_counter.setFont(font2)
-        self.le_time_counter.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
-        self.le_time_counter.setMouseTracking(False)
-        self.le_time_counter.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.le_time_counter.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
-        self.le_time_counter.setAutoFillBackground(False)
-        self.le_time_counter.setStyleSheet(u"background-color: transparent; border: none;")
-        self.le_time_counter.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.gridLayout_2.addWidget(self.le_time_counter, 0, 1, 1, 2)
+        self.gridLayout_2.addWidget(self.btn_payment, 4, 1, 1, 2)
 
         self.btn_all_delete = QPushButton(Form)
         self.btn_all_delete.setObjectName(u"btn_all_delete")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.btn_all_delete.sizePolicy().hasHeightForWidth())
-        self.btn_all_delete.setSizePolicy(sizePolicy2)
-        self.btn_all_delete.setFont(font)
+        sizePolicy3.setHeightForWidth(self.btn_all_delete.sizePolicy().hasHeightForWidth())
+        self.btn_all_delete.setSizePolicy(sizePolicy3)
 
-        self.gridLayout_2.addWidget(self.btn_all_delete, 0, 3, 2, 1)
-
-        self.le_total_price = QLineEdit(Form)
-        self.le_total_price.setObjectName(u"le_total_price")
-        sizePolicy.setHeightForWidth(self.le_total_price.sizePolicy().hasHeightForWidth())
-        self.le_total_price.setSizePolicy(sizePolicy)
-        font3 = QFont()
-        font3.setPointSize(20)
-        font3.setBold(False)
-        font3.setUnderline(False)
-        font3.setKerning(True)
-        self.le_total_price.setFont(font3)
-        self.le_total_price.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
-        self.le_total_price.setMouseTracking(False)
-        self.le_total_price.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.le_total_price.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
-        self.le_total_price.setAutoFillBackground(False)
-        self.le_total_price.setStyleSheet(u"background: transparent; border: none; border-bottom: 2px solid black; ")
-        self.le_total_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.gridLayout_2.addWidget(self.le_total_price, 3, 1, 1, 3)
-
-        self.le_select_products = QLineEdit(Form)
-        self.le_select_products.setObjectName(u"le_select_products")
-        self.le_select_products.setFont(font)
-        self.le_select_products.setStyleSheet(u"background: transparent; border: none;")
-        self.le_select_products.setCursorPosition(6)
-        self.le_select_products.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.gridLayout_2.addWidget(self.le_select_products, 2, 1, 1, 3)
+        self.gridLayout_2.addWidget(self.btn_all_delete, 0, 1, 2, 2)
 
 
         self.horizontalLayout_3.addLayout(self.gridLayout_2)
 
+        self.horizontalLayout_3.setStretch(1, 1)
 
         self.verticalLayout.addLayout(self.horizontalLayout_3)
 
@@ -196,11 +146,9 @@ class Ui_Form(object):
         ___qlistwidgetitem.setText(QCoreApplication.translate("Form", u"1\ubc88", None))
         self.lst_my_order_details.setSortingEnabled(__sortingEnabled)
 
-        self.le_time_num.setText(QCoreApplication.translate("Form", u"0", None))
+        self.lb_select_products.setText(QCoreApplication.translate("Form", u"0\uac1c", None))
+        self.lb_total_price.setText(QCoreApplication.translate("Form", u"\ucd1d 0\uc6d0", None))
         self.btn_payment.setText(QCoreApplication.translate("Form", u"\uacb0\uc81c\ud558\uae30", None))
-        self.le_time_counter.setText(QCoreApplication.translate("Form", u"\ub0a8\uc740 \uc2dc\uac04", None))
         self.btn_all_delete.setText(QCoreApplication.translate("Form", u"\uc804\uccb4\uc0ad\uc81c", None))
-        self.le_total_price.setText(QCoreApplication.translate("Form", u"\uc120\ud0dd\ud55c \uc0c1\ud488", None))
-        self.le_select_products.setText(QCoreApplication.translate("Form", u"\uc120\ud0dd\ud55c \uc0c1\ud488", None))
     # retranslateUi
 

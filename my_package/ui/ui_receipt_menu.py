@@ -34,9 +34,6 @@ class Ui_Form(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.le_title.sizePolicy().hasHeightForWidth())
         self.le_title.setSizePolicy(sizePolicy)
-        font = QFont()
-        font.setPointSize(40)
-        self.le_title.setFont(font)
         self.le_title.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.le_title.setStyleSheet(u"background-color: transparent;")
         self.le_title.setFrame(False)
@@ -46,9 +43,6 @@ class Ui_Form(object):
 
         self.txt_payment_list = QTextEdit(Form)
         self.txt_payment_list.setObjectName(u"txt_payment_list")
-        font1 = QFont()
-        font1.setPointSize(20)
-        self.txt_payment_list.setFont(font1)
         self.txt_payment_list.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout.addWidget(self.txt_payment_list)
@@ -65,7 +59,6 @@ class Ui_Form(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.btn_payment_completed.sizePolicy().hasHeightForWidth())
         self.btn_payment_completed.setSizePolicy(sizePolicy1)
-        self.btn_payment_completed.setFont(font)
 
         self.verticalLayout_2.addWidget(self.btn_payment_completed)
 

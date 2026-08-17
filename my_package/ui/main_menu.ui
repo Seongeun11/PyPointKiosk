@@ -25,61 +25,23 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,1,5">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
-      <widget class="QLineEdit" name="le_title">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>40</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: transparent;</string>
-       </property>
+      <widget class="QLabel" name="lb_title">
        <property name="text">
         <string>환영합니다</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QLineEdit" name="le_sub_title">
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: transparent;</string>
-       </property>
+      <widget class="QLabel" name="lb_subtitle">
        <property name="text">
         <string>주문 시작을 눌러주세요</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -98,11 +60,6 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
        <property name="focusPolicy">
         <enum>Qt::FocusPolicy::NoFocus</enum>
        </property>
@@ -118,11 +75,6 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
        </property>
        <property name="focusPolicy">
         <enum>Qt::FocusPolicy::NoFocus</enum>
@@ -142,11 +94,6 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
        </property>
        <property name="focusPolicy">
         <enum>Qt::FocusPolicy::NoFocus</enum>
@@ -170,11 +117,6 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
        </property>
        <property name="focusPolicy">
         <enum>Qt::FocusPolicy::NoFocus</enum>

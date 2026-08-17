@@ -33,39 +33,19 @@
   <property name="styleSheet">
    <string notr="true"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,2,0">
+  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,2,0,0">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QLineEdit" name="le_select_discount">
+      <widget class="QLabel" name="lb_select_discount">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: transparent;</string>
-       </property>
        <property name="text">
         <string>할인을 선택해주세요</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -79,11 +59,6 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="font">
-          <font>
-           <pointsize>20</pointsize>
-          </font>
-         </property>
          <property name="text">
           <string>수련생 할인</string>
          </property>
@@ -96,11 +71,6 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>20</pointsize>
-          </font>
          </property>
          <property name="autoFillBackground">
           <bool>false</bool>
@@ -141,53 +111,6 @@
      <property name="bottomMargin">
       <number>0</number>
      </property>
-     <item row="1" column="0" colspan="3">
-      <widget class="QLineEdit" name="lineEdit">
-       <property name="styleSheet">
-        <string notr="true">background-color: transparent;</string>
-       </property>
-       <property name="text">
-        <string>카드 결제는 지원하지 않습니다.</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="btn_academy_point_payment">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>아카데미 포인트</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0" colspan="3">
-      <widget class="QLineEdit" name="lineEdit_2">
-       <property name="styleSheet">
-        <string notr="true">background-color: transparent;</string>
-       </property>
-       <property name="text">
-        <string>결제 수단을 선택해주세요</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="0">
       <widget class="QPushButton" name="btn_cash_payment">
        <property name="sizePolicy">
@@ -195,11 +118,6 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
        </property>
        <property name="text">
         <string>현금 결제</string>
@@ -209,18 +127,52 @@
      <item row="2" column="1">
       <widget class="QPushButton" name="btn_bank_transfer_payment">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>계좌 이체</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="btn_academy_point_payment">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>아카데미 포인트</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" colspan="3">
+      <widget class="QLabel" name="label">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>결제 수단을 선택해주세요</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="3">
+      <widget class="QLabel" name="label_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>카드 결제는 지원하지 않습니다.</string>
        </property>
       </widget>
      </item>
@@ -240,205 +192,33 @@
      <property name="bottomMargin">
       <number>0</number>
      </property>
-     <item row="2" column="0">
-      <widget class="QLineEdit" name="le_payment_amount">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string>background-color: transparent;</string>
-       </property>
-       <property name="text">
-        <string>결제 금액</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="le_purchase_amount_num">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string>background-color: transparent;</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="le_payment_amount_num">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string>background-color: transparent;</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="le_discount_amount_num">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string>background-color: transparent;</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLineEdit" name="le_discount_amount">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string>background-color: transparent;</string>
-       </property>
-       <property name="text">
-        <string>할인 금액</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLineEdit" name="le_purchase_amount">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: transparent;</string>
-       </property>
-       <property name="text">
-        <string>구매 금액</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0" colspan="3">
-      <widget class="QPushButton" name="btn_back">
+     <item row="4" column="0">
+      <widget class="QLabel" name="lb_discount_amount">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>30</pointsize>
-        </font>
-       </property>
        <property name="text">
-        <string>뒤로가기</string>
+        <string>할인 금액</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="2" rowspan="3">
+     <item row="4" column="1">
+      <widget class="QLabel" name="lb_discount_amount_num">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2" rowspan="5">
       <widget class="QPushButton" name="btn_all_clear_discount">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -448,6 +228,153 @@
        </property>
        <property name="text">
         <string>할인 전체 취소</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0" colspan="3">
+      <widget class="Line" name="horizn_line">
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Plain</enum>
+       </property>
+       <property name="lineWidth">
+        <number>2</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="2" rowspan="4">
+      <widget class="QPushButton" name="btn_amount_received">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>받은 금액</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1" rowspan="2">
+      <widget class="QLabel" name="lb_payment_amount_num">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0" rowspan="2">
+      <widget class="QLabel" name="lb_payment_amount">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>결제 금액</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" rowspan="2">
+      <widget class="QLabel" name="lb_purchase_amount">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>구매 금액</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" rowspan="2">
+      <widget class="QLabel" name="lb_purchase_amount_num">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="0" rowspan="2">
+      <widget class="QLabel" name="lb_amount_received">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>받은 금액</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1" rowspan="2">
+      <widget class="QLabel" name="lb_amount_received_num">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1" rowspan="2">
+      <widget class="QLabel" name="lb_remaining_amount_num">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="0" rowspan="2">
+      <widget class="QLabel" name="lb_remaining_amount">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>거스름 금액</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QPushButton" name="btn_back">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>뒤로가기</string>
        </property>
       </widget>
      </item>

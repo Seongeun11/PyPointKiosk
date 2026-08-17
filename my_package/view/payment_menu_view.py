@@ -1,9 +1,11 @@
 #my_package\view\payment_menu_view.py
-from PySide6.QtWidgets import QWidget,QMessageBox
-from PySide6.QtCore import Signal, Qt
+from PySide6.QtWidgets import QMessageBox
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QColor, QPalette
 from my_package.ui.ui_payment_menu import Ui_Form
+from my_package.utils.base_scaled_manager import BaseScaledWidget
 
-class PaymentMenuView(QWidget):
+class PaymentMenuView(BaseScaledWidget):
     """결제 메뉴 화면 View 클래스"""
     # 할인 다이얼로그 오픈 요청 시그널 ("student", "academy")
     open_discount_dialog_signal = Signal(str)
@@ -40,28 +42,14 @@ class PaymentMenuView(QWidget):
         self.ui.setupUi(self)
   
         self._setup_button_styles()
+        self._update_text_color()
         self._init_ui()
         self._connect_signals()
 
     def _init_ui(self):
-        self.setMinimumSize(1280, 720)
+        self.setMinimumSize(720, 720)
         self.ui.btn_academy_point_payment.setEnabled(False)  # 초기에는 아카데미 포인트 결제 버튼 비활성화
-        # [신규] 계좌이체 버튼 상단/하단 안내용 경고 라벨 동적 생성 (UI 파일에 없을 경우 대비)
-        #if not hasattr(self.ui, "lbl_bank_notice"):
-        #    self.lbl_bank_notice = QLabel(self)
-        #    self.lbl_bank_notice.setStyleSheet("color: red; font-weight: bold; font-size: 13px;")
-        #    self.lbl_bank_notice.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-            # 계좌이체 버튼이 속한 레이아웃에 안내 라벨 추가
-        #    if hasattr(self.ui, "btn_bank_transfer_payment"):
-        #        btn = self.ui.btn_bank_transfer_payment
-        #        parent = btn.parentWidget()
-        #        layout = parent.layout() if parent is not None else self.layout()
-
-        #        if layout is not None:
-        #            idx = layout.indexOf(btn)
-        #            if idx >= 0:
-        #                layout.addWidget(self.lbl_bank_notice)
+        
 
     def set_bank_transfer_state(self, is_jpy: bool, is_ja: bool = False):
         """
@@ -92,7 +80,19 @@ class PaymentMenuView(QWidget):
                 self.ui.btn_bank_transfer_payment.setEnabled(True)
                 self.ui.btn_bank_transfer_payment.setText("계좌이체" if not is_ja else "銀行振込")
                 #self.lbl_bank_notice.setVisible(False)
-
+    def _update_text_color(self):
+        if hasattr(self.ui, "lb_discount_amount_num"):
+        # font-weight 및 font-size를 CSS에서 제외하여 폰트 상속 유지
+        # CSS 대신 QPalette를 통해 색상 적용 (폰트 스케일링 유지를 위함)
+            palette_green = self.ui.lb_discount_amount_num.palette()
+            palette_green.setColor(QPalette.ColorRole.WindowText, QColor("#FF3300"))
+            self.ui.lb_discount_amount_num.setPalette(palette_green)
+        if hasattr(self.ui, "lb_payment_amount_num"):
+                # font-weight 및 font-size를 CSS에서 제외하여 폰트 상속 유지
+                # CSS 대신 QPalette를 통해 색상 적용 (폰트 스케일링 유지를 위함)
+                    palette_green = self.ui.lb_payment_amount_num.palette()
+                    palette_green.setColor(QPalette.ColorRole.WindowText, QColor("#0026FF"))
+                    self.ui.lb_payment_amount_num.setPalette(palette_green)
 
     def _setup_button_styles(self):
         """할인 버튼을 Checkable 속성으로 설정 및 스타일시트 적용"""
@@ -114,6 +114,7 @@ class PaymentMenuView(QWidget):
 
         if hasattr(self.ui,"btn_coupon"):
             self.ui.btn_coupon.setChecked(active_discount_type == "coupon")
+
 
 
     def _connect_signals(self):
@@ -164,7 +165,7 @@ class PaymentMenuView(QWidget):
         (버튼 크기 및 폰트 확장 적용)
         """
         # 현재 화면에 표시된 최종 결제 금액 텍스트 가져오기 (있는 경우)
-        final_price_text = self.ui.le_payment_amount_num.text() if hasattr(self.ui, "le_payment_amount_num") else ""
+        final_price_text = self.ui.lb_payment_amount_num.text() if hasattr(self.ui, "lb_payment_amount_num") else ""
 
         # 결제 수단 한글/일어 라벨 매핑 (View 자체 UI 단어)
         pay_type_names = {

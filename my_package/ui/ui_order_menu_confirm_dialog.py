@@ -30,9 +30,6 @@ class Ui_Dialog(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.lineEdit = QLineEdit(Dialog)
         self.lineEdit.setObjectName(u"lineEdit")
-        font = QFont()
-        font.setPointSize(40)
-        self.lineEdit.setFont(font)
         self.lineEdit.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
         self.lineEdit.setStyleSheet(u"background-color: transparent;")
         self.lineEdit.setFrame(False)
@@ -42,9 +39,6 @@ class Ui_Dialog(object):
 
         self.txt_payment_list = QTextEdit(Dialog)
         self.txt_payment_list.setObjectName(u"txt_payment_list")
-        font1 = QFont()
-        font1.setPointSize(20)
-        self.txt_payment_list.setFont(font1)
         self.txt_payment_list.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout.addWidget(self.txt_payment_list)
@@ -61,9 +55,6 @@ class Ui_Dialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_order_complated.sizePolicy().hasHeightForWidth())
         self.btn_order_complated.setSizePolicy(sizePolicy)
-        font2 = QFont()
-        font2.setPointSize(30)
-        self.btn_order_complated.setFont(font2)
 
         self.horizontalLayout.addWidget(self.btn_order_complated)
 
@@ -71,7 +62,6 @@ class Ui_Dialog(object):
         self.btn_back.setObjectName(u"btn_back")
         sizePolicy.setHeightForWidth(self.btn_back.sizePolicy().hasHeightForWidth())
         self.btn_back.setSizePolicy(sizePolicy)
-        self.btn_back.setFont(font2)
 
         self.horizontalLayout.addWidget(self.btn_back)
 

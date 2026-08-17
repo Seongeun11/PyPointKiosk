@@ -1,17 +1,20 @@
 #my_package\view\discount_dialog_view.py
-#------
-#
-# 이 뷰는 사용하지 않음. not used
-#------
 from PySide6.QtWidgets import (
     QDialog, QSizePolicy, QVBoxLayout, QHBoxLayout, QLabel, 
     QSpinBox, QPushButton, QGroupBox, QMessageBox
 )
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QPalette
+from my_package.utils.base_scaled_manager import BaseScaledDialog
 
-class DiscountDialog(QDialog):
+class DiscountDialog(BaseScaledDialog):
     """금액 할인 선택 및 누적 다이얼로그 (버퍼링 적용)"""
-    
+    BASE_WIDTH = 720.0
+    BASE_HEIGHT = 720.0
+    BASE_FONT_SIZE = 28  # 부모의 12 대신 24 적용
+    MIN_FONT_SIZE = 24
+    MAX_FONT_SIZE = 34
+
     PRESETS_KRW = [1000, 3000, 5000, 10000]
     PRESETS_JPY = [100, 300, 500, 1000]
 
@@ -30,7 +33,6 @@ class DiscountDialog(QDialog):
         self._update_display()
 
     def _init_ui(self):
-        
         layout = QVBoxLayout(self)
 
         # 1. 구매 금액 & 누적 할인 금액 표시 레이블
@@ -53,8 +55,14 @@ class DiscountDialog(QDialog):
                             QSizePolicy.Policy.Expanding, 
                             QSizePolicy.Policy.Expanding
                         )
-        self.lbl_discount_info.setStyleSheet("font-weight: bold; color: #D32F2F; font-size: 14px;")
-        self.lbl_final_info.setStyleSheet("font-weight: bold; color: #1976D2; font-size: 14px;")
+        # CSS 대신 QPalette를 통해 색상 적용 (폰트 스케일링 유지를 위함)
+        palette_red = self.lbl_discount_info.palette()
+        palette_red.setColor(QPalette.ColorRole.WindowText, QColor("#D32F2F"))
+        self.lbl_discount_info.setPalette(palette_red)
+
+        palette_blue = self.lbl_final_info.palette()
+        palette_blue.setColor(QPalette.ColorRole.WindowText, QColor("#1976D2"))
+        self.lbl_final_info.setPalette(palette_blue)
 
         info_layout.addWidget(self.lbl_purchase_info)
         info_layout.addWidget(self.lbl_discount_info)
@@ -74,10 +82,11 @@ class DiscountDialog(QDialog):
                                                 QSizePolicy.Policy.Expanding, 
                                                 QSizePolicy.Policy.Expanding
                                             )
+            # font-weight 및 font-size를 CSS에서 제외하여 폰트 상속 유지
             btn.setStyleSheet("""
                 QPushButton {
                     background-color: #E3F2FD; border: 1px solid #2196F3;
-                    border-radius: 4px; font-weight: bold; padding: 8px;
+                    border-radius: 4px; padding: 8px;
                 }
                 QPushButton:hover { background-color: #BBDEFB; }
             """)

@@ -3,14 +3,14 @@ from PySide6.QtWidgets import (
     QWidget, QSizePolicy, QPushButton, QToolButton, QLayout, QSpacerItem,
     QScrollArea, QHBoxLayout, QGridLayout, QListWidgetItem
 )
-from PySide6.QtGui import QIcon, QResizeEvent, QShowEvent, QMouseEvent
+from PySide6.QtGui import QIcon, QResizeEvent, QShowEvent, QMouseEvent,QFontMetrics,QPalette,QColor
 from PySide6.QtCore import QSize, Qt, Signal, QTimer
 
 # 자동 생성된 UI 클래스 import
 from my_package.ui.ui_order_menu import Ui_Form 
 from my_package.custom_widget.cart_item_widget import CartItemWidget #장바구니 관리 클래스
 from my_package.utils.image_manager import ImageManager #이미지 관리 유틸리티 클래스
-
+from my_package.utils.base_scaled_manager import BaseScaledWidget
 # 타이틀 버튼의 더블클릭을 감지하기 위한 Custom PushButton
 class TitleButton(QPushButton):
     double_clicked = Signal()
@@ -20,7 +20,7 @@ class TitleButton(QPushButton):
             self.double_clicked.emit()
         super().mouseDoubleClickEvent(event)
 
-class OrderMenuView(QWidget):
+class OrderMenuView(BaseScaledWidget):
     category_clicked_signal = Signal(int)
     product_clicked_signal = Signal(dict)
     pay_clicked_signal = Signal()
@@ -40,16 +40,16 @@ class OrderMenuView(QWidget):
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
-        self.setMinimumSize(1280, 720)
+        self.setMinimumSize(720, 880)
         # 4열 고정 규격
         self.GRID_COLS = 4
-        self.GRID_ROWS = 3
+        self.GRID_ROWS = 4
         # 1페이지당 기본 아이템 개수 (열 x 행)
         self.GRID_PAGE_SIZE = self.GRID_COLS * self.GRID_ROWS
         
         # 행 수에 따른 버튼 적정 높이 계산 (예: 2행=300px, 3행=200px 등)
         # 키오스크 해상도나 레이아웃에 맞춰 적절한 기본 높이 로직을 적용합니다.
-        self.BUTTON_HEIGHT = 280
+        self.BUTTON_HEIGHT = 200
         self.PRODUCT_BTN_HEIGHT = max(self.BUTTON_HEIGHT, int(600 / self.GRID_ROWS))
 
         #CATEGORY 관련 상수
@@ -206,19 +206,28 @@ class OrderMenuView(QWidget):
         if w <= 100 or h <= 100:
             return
 
-        base_scale = min(w / 640.0, h / 720.0)
-        title_font_size = max(14, min(int(18 * base_scale), 32))
-        cat_font_size = max(10, min(int(13 * base_scale), 20))
-        prod_font_size = max(11, min(int(14 * base_scale), 24))
-        pay_font_size = max(16, min(int(22 * base_scale), 40))
+        # 기본 화면 비율 계산 (BaseScaledWidget 기준과 통일)
+        base_scale = min(w / self.width(), h / self.height())
+        
+        # 폰트 크기 단계별 산출 (최소pt ~ 최대pt)
+        title_font_size = max(20, min(int(30 * base_scale), 32))
+        cat_font_size   = max(28, min(int(30 * base_scale), 32))
+        prod_font_size  = max(11, min(int(14 * base_scale), 24))
+        sub_font_size   = max(11, min(int(13 * base_scale), 22)) # [추가] 하단 정보용
+        pay_font_size   = max(16, min(int(22 * base_scale), 40))
 
-        # 1. 타이틀 라벨 (lbl_title)
-        if hasattr(self.ui, "lbl_title"):
+        # 1. 타이틀 버튼 (btn_title) 및 뒤로가기 버튼 (btn_back)
+        if hasattr(self.ui, "btn_title"):
             font = self.ui.btn_title.font()
             font.setPointSize(title_font_size)
             self.ui.btn_title.setFont(font)
 
-        # 2. 카테고리 버튼
+        #if hasattr(self.ui, "btn_back"):
+        #    font = self.ui.btn_back.font()
+        #    font.setPointSize(sub_font_size)
+        #    self.ui.btn_back.setFont(font)
+
+        # 2. 카테고리 버튼들
         for i in range(self.category_layout.count()):
             item = self.category_layout.itemAt(i)
             widget = item.widget() if item else None
@@ -227,12 +236,11 @@ class OrderMenuView(QWidget):
                 font.setPointSize(cat_font_size)
                 widget.setFont(font)
 
-        # 3. 메뉴 상품 버튼 (더미 버튼 제외 조건 추가)
+        # 3. 메뉴 상품 버튼들
         for i in range(self.menu_grid_layout.count()):
             layout_item = self.menu_grid_layout.itemAt(i)
             widget = layout_item.widget() if layout_item else None
             
-            # [핵심] 실제 활성화된 QToolButton만 스케일링을 수행하여 UI 왜곡 방지
             if isinstance(widget, QToolButton) and widget.isEnabled():
                 btn_w, btn_h = widget.width(), widget.height()
 
@@ -243,18 +251,43 @@ class OrderMenuView(QWidget):
                 font = widget.font()
                 font.setPointSize(prod_font_size)
                 widget.setFont(font)
-        # [추가] 상품 개수 표시 LineEdit (le_product) 스케일링 적용
-        if hasattr(self.ui, "le_product"):
-            font = self.ui.le_select_products.font()
-            font.setPointSize(prod_font_size)
-            self.ui.le_select_products.setFont(font)
-            self.ui.le_select_products.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            
-        # 4. 결제 버튼 (btn_payment)
+
+        # 4. [해결/추가] 하단 주문 정보 LineEdit 및 버튼 일괄 스케일링
+        #info_widgets = [
+        #    getattr(self.ui, "lb_select_products", None), # 선택 개수
+        #    getattr(self.ui, "lb_total_price", None),      # 총 금액
+        #    getattr(self.ui, "lb_time_counter", None),     # 남은 시간 라벨
+        #    getattr(self.ui, "lb_time_num", None),         # 남은 시간 숫자
+        #    getattr(self.ui, "btn_all_delete", None)       # 전체 삭제 버튼
+        #]
+
+        #for widget in info_widgets:
+        #    if widget:
+        #        font = widget.font()
+                # 총 금액과 전체삭제 버튼은 약간 강조
+        #        if widget in (self.ui.lb_total_price, self.ui.btn_all_delete):
+        #            font.setPointSize(int(sub_font_size * 1.15))
+        #        else:
+        #            font.setPointSize(sub_font_size)
+        #        widget.setFont(font)
+
+        # 5. [해결/추가] 장바구니 리스트(QListWidget) 폰트 스케일링
+        #if hasattr(self.ui, "lst_my_order_details"):
+        #    font = self.ui.lst_my_order_details.font()
+        #    font.setPointSize(sub_font_size)
+        #    self.ui.lst_my_order_details.setFont(font)
+
+        # 6. 결제 버튼 (btn_payment)
         if hasattr(self.ui, "btn_payment"):
-            font = self.ui.btn_payment.font()
-            font.setPointSize(pay_font_size)
-            self.ui.btn_payment.setFont(font)
+        # font-weight 및 font-size를 CSS에서 제외하여 폰트 상속 유지
+        # CSS 대신 QPalette를 통해 색상 적용 (폰트 스케일링 유지를 위함)
+            palette_green = self.ui.btn_payment.palette()
+            palette_green.setColor(QPalette.ColorRole.Button, QColor("#019811"))
+            self.ui.btn_payment.setPalette(palette_green)
+                    
+        #    font = self.ui.btn_payment.font()
+        #    font.setPointSize(pay_font_size)
+        #    self.ui.btn_payment.setFont(font)
             
     # ---------------------------------------------------------
     # [동적 변경 함수] 실행 중에도 행 수를 변경할 수 있는 Setter 추가
@@ -297,7 +330,7 @@ class OrderMenuView(QWidget):
                 QPushButton {{
                     background-color: {"#FF5500" if is_selected else "#E0E0E0"};
                     color: {"#FFFFFF" if is_selected else "#000000"};
-                    font-size: 13px;
+                    font-size: 18px;
                     font-weight: bold;
                     border-radius: 6px;
                 }}
@@ -314,7 +347,8 @@ class OrderMenuView(QWidget):
         QTimer.singleShot(0, self._update_ui_scaling)
 
     # ---------------------------------------------------------
-    # [수정] render_products : 빈 슬롯을 투명 QToolButton으로 채워 완벽한 그리드 유지를 보장
+    # [교정된] render_products : 항상 GRID_PAGE_SIZE(16개) 이상 
+    # 및 4열 규격(4의 배수)을 보장하여 동일한 높이/크기 유지
     # ---------------------------------------------------------
     def render_products(self, products: list):
         self._clear_layout(self.menu_grid_layout)
@@ -324,13 +358,18 @@ class OrderMenuView(QWidget):
             self.menu_grid_layout.setColumnStretch(col, 1)
 
         total_items = len(products)
-        # 아이템 수가 부족해도 최소 1페이지 분량(GRID_PAGE_SIZE)을 보장
-        display_items = max(total_items, self.GRID_PAGE_SIZE)
+        
+        # [원인 해결 핵심] 아이템 수가 10개('잔' 카테고리)여도 최소 16개(4행x4열) 보장
+        # 16개 초과 시에는 4의 배수로 반올림하여 항상 채워진 행 규격 유지
+        if total_items <= self.GRID_PAGE_SIZE:
+            display_items = self.GRID_PAGE_SIZE
+        else:
+            display_items = ((total_items + self.GRID_COLS - 1) // self.GRID_COLS) * self.GRID_COLS
 
-        # 2. 행(Row) 개수 계산 및 Stretch 초기화
-        total_rows = (display_items + self.GRID_COLS - 1) // self.GRID_COLS
+        # 2. 행(Row) 개수 계산
+        total_rows = display_items // self.GRID_COLS
         for r in range(total_rows):
-            self.menu_grid_layout.setRowStretch(r, 0) # 세로로 불필요하게 늘어나는 것 방지
+            self.menu_grid_layout.setRowStretch(r, 0)
 
         # 3. 실제 상품 및 더미 위젯 배치
         for idx in range(display_items):
@@ -341,17 +380,16 @@ class OrderMenuView(QWidget):
                 btn = self._create_product_button(products[idx], self.PRODUCT_BTN_HEIGHT)
                 self.menu_grid_layout.addWidget(btn, row, col)
             else:
-                # 완벽히 동일한 최소/최대 크기를 갖는 투명 더미 버튼 배치
+                # 동일 규격의 투명 더미 버튼으로 빈 공간 채움
                 dummy_btn = self._create_dummy_button(self.PRODUCT_BTN_HEIGHT)
                 self.menu_grid_layout.addWidget(dummy_btn, row, col)
 
-        # 4. 하단 남는 공간을 밀어내서 상단 정렬을 유휴시키는 Vertical Spacer 추가
+        # 4. 하단 여백 밀어내기 스페이서 추가 (정확히 total_rows 위치에 배치)[cite: 1]
         v_spacer = QSpacerItem(1, 1, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.menu_grid_layout.addItem(v_spacer, total_rows, 0, 1, self.GRID_COLS)
 
         self.menu_scroll.verticalScrollBar().setValue(0)
         QTimer.singleShot(0, self._update_ui_scaling)
-
 
     # ---------------------------------------------------------
     # [신규 추가] 투명 더미 버튼 생성 함수 (그리드 레이아웃 틀 고정용)
@@ -380,13 +418,44 @@ class OrderMenuView(QWidget):
 
         is_sold_out = product_data.get("is_sold_out", False)
 
-        name = str(product_data.get('display_name', product_data.get('name', '')))
-        if len(name) > 6 and ' ' not in name:
-            mid = len(name) // 2
-            formatted_name = name[:mid] + '\n' + name[mid:]
-        else:
-            formatted_name = name
+        # 1. 원본 상품명 추출
+        raw_name = str(product_data.get('display_name', product_data.get('name', '')))
+        
+        # 2. 버튼 내 텍스트 표시 가능 가용 너비 계산 (버튼 마진 및 패딩 고려: 약 20px 차감)
+        # GRID_COLS(4열) 스크롤 영역 내부 너비를 기준으로 동적 계산하거나, 안전치 적용
+        font = btn.font()
+        metrics = QFontMetrics(font)
+        
+        # 4열 기준 대략적인 1개 버튼 가용 너비 (예: 120~150px 기준 safety max limits)
+        # grid layout 안에서 버튼이 고정폭을 유지하도록 max_text_width 설정
+        max_text_width = 70  
 
+        # 3. QFontMetrics 기반 동적 자동 줄바꿈(Word Wrap) 처리 함수
+        def wrap_text_by_pixel(text: str, max_width: int, metrics: QFontMetrics) -> str:
+            lines = []
+            current_line = ""
+            
+            for char in text:
+                # 공백이나 기존 줄바꿈이 있을 경우
+                if char == '\n':
+                    lines.append(current_line)
+                    current_line = ""
+                    continue
+                    
+                test_line = current_line + char
+                # 픽셀 너비 측정 후 초과 시 줄바꿈 처리
+                if metrics.horizontalAdvance(test_line) > max_width and current_line:
+                    lines.append(current_line)
+                    current_line = char
+                else:
+                    current_line = test_line
+                    
+            if current_line:
+                lines.append(current_line)
+                
+            return "\n".join(lines)
+
+        formatted_name = wrap_text_by_pixel(raw_name, max_text_width, metrics)
         formatted_price = product_data.get("price_str", f"{product_data.get('computed_price', product_data.get('price', 0)):,}원")
         
         if is_sold_out:
@@ -427,7 +496,6 @@ class OrderMenuView(QWidget):
             lambda checked=False, p=product_data: self.product_clicked_signal.emit(p)
         )
         return btn
-
     def showEvent(self, event: QShowEvent):
         super().showEvent(event)
         QTimer.singleShot(0, self._update_ui_scaling)
@@ -439,11 +507,11 @@ class OrderMenuView(QWidget):
     # [신규] MVC 바인딩용 : 전체 상품 수량 UI 업데이트
     # ---------------------------------------------------------
     def update_product_count_view(self, total_count: int):
-        """장바구니/선택된 전체 상품 개수를 le_select_products에 반영"""
-        if hasattr(self.ui, "le_select_products"):
-            self.ui.le_select_products.setText(f"{total_count}개")
+        """장바구니/선택된 전체 상품 개수를 lb_select_products에 반영"""
+        if hasattr(self.ui, "lb_select_products"):
+            self.ui.lb_select_products.setText(f"{total_count}개")
             # 필요 시 읽기 전용으로 보장
-            self.ui.le_select_products.setReadOnly(True)
+            #self.ui.lb_select_products.setReadOnly(True)
 
     # --- QListWidget 기반 장바구니 렌더링 ---
     # OrderMenuView 내 장바구니 렌더링 업데이트 함수 수정
@@ -479,7 +547,7 @@ class OrderMenuView(QWidget):
         else:
             price_text = f"총 {total_price:,}원"
 
-        self.ui.le_total_price.setText(price_text)
+        self.ui.lb_total_price.setText(price_text)
 
     #뒤로가기 시그널 이벤트 연결
     def handle_go_back_clicked(self):

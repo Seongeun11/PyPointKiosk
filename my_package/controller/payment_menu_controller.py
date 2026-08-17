@@ -266,13 +266,13 @@ class PaymentMenuController(QObject):
 
         # 2. 금액 및 할인명 UI 라인에디터 업데이트
         if unit == "¥":
-            self.view.ui.le_purchase_amount_num.setText(f"¥{purchase_amt:,}")
-            self.view.ui.le_discount_amount_num.setText(f"{prefix}-¥{discount_amt:,}")
-            self.view.ui.le_payment_amount_num.setText(f"¥{final_pay_amt:,}")
+            self.view.ui.lb_purchase_amount_num.setText(f"¥{purchase_amt:,}")
+            self.view.ui.lb_discount_amount_num.setText(f"{prefix}-¥{discount_amt:,}")
+            self.view.ui.lb_payment_amount_num.setText(f"¥{final_pay_amt:,}")
         else:
-            self.view.ui.le_purchase_amount_num.setText(f"{purchase_amt:,}원")
-            self.view.ui.le_discount_amount_num.setText(f"{prefix}-{discount_amt:,}원")
-            self.view.ui.le_payment_amount_num.setText(f"{final_pay_amt:,}원")
+            self.view.ui.lb_purchase_amount_num.setText(f"{purchase_amt:,}원")
+            self.view.ui.lb_discount_amount_num.setText(f"{prefix}-{discount_amt:,}원")
+            self.view.ui.lb_payment_amount_num.setText(f"{final_pay_amt:,}원")
 
         # 3. View의 할인 버튼 선택/해제 상태 동기화 (할인액 0원과 무관하게 상태 반영)
         self.view.update_discount_button_states(discount_type)

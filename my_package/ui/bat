@@ -1,7 +1,7 @@
 pyside6-uic my_package/ui/main_menu.ui -o ui_main_menu.py
 
 
-pyside6-uic my_package/ui/order_menu_fhd.ui -o ui_order_menu_fhd.py
+pyside6-uic my_package/ui/order_menu.ui -o ui_order_menu.py
 
 pyside6-uic my_package/ui/payment_menu.ui -o ui_payment_menu.py
 

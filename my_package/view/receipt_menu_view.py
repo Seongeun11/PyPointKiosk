@@ -2,9 +2,15 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 from my_package.ui.ui_receipt_menu import Ui_Form
+from my_package.utils.base_scaled_manager import BaseScaledWidget
 
-class ReceiptMenuView(QWidget):
+class ReceiptMenuView(BaseScaledWidget):
     """결제 완료 영수증 화면 View"""
+
+    BASE_FONT_SIZE = 20  # 부모의 12 대신 24 적용
+    MIN_FONT_SIZE = 20
+    MAX_FONT_SIZE = 34
+    
     # 사용자가 화면 하단의 '확인/결제완료' 버튼을 눌렀을 때 발송
     confirm_clicked_signal = Signal()
 
@@ -12,7 +18,7 @@ class ReceiptMenuView(QWidget):
         super().__init__(parent)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
-        self.setMinimumSize(1280, 720)
+        self.setMinimumSize(720, 720)
         self._connect_signals()
 
     def _connect_signals(self):

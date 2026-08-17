@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QHeaderView, QLabel, QSpinBox, QGroupBox, QFileDialog,QInputDialog
 )
 from PySide6.QtCore import Qt, Signal
-
+from my_package.utils.base_scaled_manager import BaseScaledDialog
 
 # ==============================================================================
 # 마우스 휠 스크롤에 의한 값 변경을 방지하는 커스텀 ComboBox
@@ -16,15 +16,15 @@ class NoScrollComboBox(QComboBox):
     def wheelEvent(self, event):
         event.ignore()
 
-
-class AdminMenuDialogView(QDialog):
+# [수정] QDialog 대신 BaseScaledDialog 상속
+class AdminMenuDialogView(BaseScaledDialog):
     export_excel_requested = Signal(str)  # 파일 저장 경로 전송 시그널
 
     def __init__(self, model, parent=None):
         super().__init__(parent)
         self.model = model
         self.setWindowTitle("관리자 메뉴 - 상품 및 카테고리 관리")
-        self.resize(820, 720)  # 스크롤바 및 다국어 필드 가독성을 고려한 크기 조정
+        self.resize(820, 820)  # 스크롤바 및 다국어 필드 가독성을 고려한 크기 조정
         self.setWindowFlags(
             Qt.WindowType.Window | 
             Qt.WindowType.CustomizeWindowHint | 
@@ -65,13 +65,13 @@ class AdminMenuDialogView(QDialog):
         
         # 각 컬럼 기본 너비 설정
         self.table.setColumnWidth(0, 40)   # ID
-        self.table.setColumnWidth(1, 100)  # 카테고리
-        self.table.setColumnWidth(2, 130)  # 상품명(한국어)
-        self.table.setColumnWidth(3, 80)   # 가격(원화)
-        self.table.setColumnWidth(4, 90)   # 수련생 할인
-        self.table.setColumnWidth(5, 90)   # 아카데미 할인
-        self.table.setColumnWidth(6, 130)  # 상품명(일본어)
-        self.table.setColumnWidth(7, 80)   # 가격(엔화)
+        #self.table.setColumnWidth(1, 100)  # 카테고리
+        #self.table.setColumnWidth(2, 130)  # 상품명(한국어)
+        #self.table.setColumnWidth(3, 80)   # 가격(원화)
+        #self.table.setColumnWidth(4, 90)   # 수련생 할인
+        #self.table.setColumnWidth(5, 90)   # 아카데미 할인
+        #self.table.setColumnWidth(6, 130)  # 상품명(일본어)
+        #self.table.setColumnWidth(7, 80)   # 가격(엔화)
 
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         
