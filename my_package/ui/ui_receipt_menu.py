@@ -15,7 +15,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QLineEdit, QPushButton, QSizePolicy,
+from PySide6.QtWidgets import (QApplication, QLabel, QPushButton, QSizePolicy,
     QTextEdit, QVBoxLayout, QWidget)
 
 class Ui_Form(object):
@@ -27,19 +27,11 @@ class Ui_Form(object):
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.le_title = QLineEdit(Form)
-        self.le_title.setObjectName(u"le_title")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.le_title.sizePolicy().hasHeightForWidth())
-        self.le_title.setSizePolicy(sizePolicy)
-        self.le_title.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.le_title.setStyleSheet(u"background-color: transparent;")
-        self.le_title.setFrame(False)
-        self.le_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label = QLabel(Form)
+        self.label.setObjectName(u"label")
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.verticalLayout.addWidget(self.le_title)
+        self.verticalLayout.addWidget(self.label)
 
         self.txt_payment_list = QTextEdit(Form)
         self.txt_payment_list.setObjectName(u"txt_payment_list")
@@ -54,11 +46,11 @@ class Ui_Form(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.btn_payment_completed = QPushButton(Form)
         self.btn_payment_completed.setObjectName(u"btn_payment_completed")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.btn_payment_completed.sizePolicy().hasHeightForWidth())
-        self.btn_payment_completed.setSizePolicy(sizePolicy1)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btn_payment_completed.sizePolicy().hasHeightForWidth())
+        self.btn_payment_completed.setSizePolicy(sizePolicy)
 
         self.verticalLayout_2.addWidget(self.btn_payment_completed)
 
@@ -75,7 +67,7 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
-        self.le_title.setText(QCoreApplication.translate("Form", u"\uc8fc\ubb38\uc774 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4.", None))
+        self.label.setText(QCoreApplication.translate("Form", u"\uc8fc\ubb38\uc774 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4.", None))
         self.btn_payment_completed.setText(QCoreApplication.translate("Form", u"\ucc98\uc74c\uc73c\ub85c \ub3cc\uc544\uac00\uae30", None))
     # retranslateUi
 

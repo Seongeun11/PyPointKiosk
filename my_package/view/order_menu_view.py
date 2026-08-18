@@ -282,7 +282,7 @@ class OrderMenuView(BaseScaledWidget):
         # font-weight 및 font-size를 CSS에서 제외하여 폰트 상속 유지
         # CSS 대신 QPalette를 통해 색상 적용 (폰트 스케일링 유지를 위함)
             palette_green = self.ui.btn_payment.palette()
-            palette_green.setColor(QPalette.ColorRole.Button, QColor("#019811"))
+            palette_green.setColor(QPalette.ColorRole.Button, QColor("#2BB839"))
             self.ui.btn_payment.setPalette(palette_green)
                     
         #    font = self.ui.btn_payment.font()

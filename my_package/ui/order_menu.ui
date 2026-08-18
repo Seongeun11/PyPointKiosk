@@ -106,14 +106,14 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
+    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,2">
      <property name="leftMargin">
       <number>0</number>
      </property>
      <item>
       <widget class="QListWidget" name="lst_my_order_details">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>

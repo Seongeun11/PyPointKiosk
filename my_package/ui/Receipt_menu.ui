@@ -17,24 +17,9 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QLineEdit" name="le_title">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::NoFocus</enum>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: transparent;</string>
-       </property>
+      <widget class="QLabel" name="label">
        <property name="text">
         <string>주문이 완료되었습니다.</string>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>

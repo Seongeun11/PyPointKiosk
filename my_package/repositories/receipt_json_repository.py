@@ -51,9 +51,20 @@ class ReceiptRepositoryModel:
             print(f"[Model Error] 영수증 파일 읽기 실패 ({file_path}): {e}")
             return []
 
-    def add_receipt(self, pay_type: str, cart_items: list, purchase_amount: int, 
-                    discount_type: str, discount_amount: int, final_amount: int,
-                    currency: str = "KRW") -> dict:
+    def add_receipt(
+        self,
+        pay_type: str,
+        cart_items: list,
+        purchase_amount: int,
+        discount_type: str,
+        discount_amount: int,
+        final_amount: int,
+        currency: str = "KRW",
+        cash_received: int = 0,
+        coupon_received: int = 0,
+        change_amount: int = 0,
+        receipt_text: str = "",  # [신규] 영수증 뷰 텍스트 파라미터 추가
+    ) -> dict:
         now = datetime.now()
         business_date_str = self.get_business_date_str(now)
         daily_file_path = self._get_daily_file_path(business_date_str)
@@ -64,13 +75,18 @@ class ReceiptRepositoryModel:
         receipt_data = {
             "id": next_id,
             "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
-            "pay_type": pay_type,                     
-            "discount_type": discount_type,           
+            "pay_type": pay_type,
+            "discount_type": discount_type,
             "currency": currency,
             "purchase_amount": purchase_amount,
-            "discount_amount": discount_amount,       
-            "final_amount": final_amount,             
-            "items": cart_items                       
+            "discount_amount": discount_amount,
+            "final_amount": final_amount,
+            "cash_received": cash_received,
+            "coupon_received": coupon_received,
+            "total_received": cash_received + coupon_received,
+            "change_amount": change_amount,
+            "items": cart_items,
+            "receipt_text": receipt_text,  # [신규] 영수증 뷰 형식 그대로 JSON에 저장
         }
 
         receipts.append(receipt_data)
@@ -78,7 +94,7 @@ class ReceiptRepositoryModel:
         try:
             with open(daily_file_path, "w", encoding="utf-8") as f:
                 json.dump(receipts, f, ensure_ascii=False, indent=2)
-                print(f"[Model] 영수증 저장 완료 (통화: {currency}, 영업일: {business_date_str}): {daily_file_path}")
+                print(f"[Model] 영수증 저장 완료: {daily_file_path}")
         except Exception as e:
             print(f"[Model Error] 영수증 저장 실패: {e}")
 

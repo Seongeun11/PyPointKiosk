@@ -7,7 +7,7 @@ from PySide6.QtCore import QTimer
 class BaseScaledWidget(QWidget):
     BASE_WIDTH = 720.0
     BASE_HEIGHT = 720.0
-    BASE_FONT_SIZE = 28  # 기본 폰트 크기를 클래스 변수로 분리
+    BASE_FONT_SIZE = 24  # 기본 폰트 크기를 클래스 변수로 분리
     MIN_FONT_SIZE = 24
     MAX_FONT_SIZE = 40
 

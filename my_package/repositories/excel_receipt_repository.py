@@ -18,6 +18,16 @@ class ReceiptExcelExporter:
     def __init__(self, receipt_repository: Optional[ReceiptRepositoryModel] = None):
         self.repository = receipt_repository or ReceiptRepositoryModel()
 
+    def _sanitize_excel_text(self, text: str) -> str:
+        """엑셀에서 수식(=, +, -)으로 오인하여 시트 파손을 일으키지 않도록 ই스케이프 처리"""
+        if not text:
+            return ""
+        stripped = text.strip()
+        # = 나 + 로 시작하면 엑셀이 수식으로 오인하므로 앞에 공백 추가
+        if stripped.startswith("=") or stripped.startswith("+"):
+            return "'" + text
+        return text
+
     def export_to_excel(self, export_file_path: str, target_date: Optional[str] = None) -> bool:
         if not target_date:
             target_date = self.repository.get_business_date_str()
@@ -63,11 +73,18 @@ class ReceiptExcelExporter:
             except Exception as e:
                 print(f"[Model Error] 상품 목록 로드 실패: {e}")
 
-        # [핵심] 할인 금액 종류별 집계 변수 (수련생 / 아카데미 / 쿠폰)
+        # [핵심 1] 할인 종류별 차감액 & 받은 쿠폰(지불수단) 집계 변수
         discount_totals = {
             "student_cash_krw": 0, "student_bank_krw": 0, "student_jpy": 0,
             "academy_cash_krw": 0, "academy_bank_krw": 0, "academy_jpy": 0,
             "coupon_cash_krw": 0,  "coupon_bank_krw": 0,  "coupon_jpy": 0
+        }
+        
+        # 받은 쿠폰(지불수단) 금액 집계 변수
+        coupon_received_totals = {
+            "cash_krw": 0,
+            "bank_krw": 0,
+            "jpy": 0
         }
 
         # 2. 영수증 JSON 내역 상세 집계
@@ -76,9 +93,20 @@ class ReceiptExcelExporter:
             d_type = r.get("discount_type")   
             currency = r.get("currency", "KRW")
             r_discount_amt = r.get("discount_amount", 0)
+            
+            # [신규] JSON 내 받은 쿠폰(지불수단) 금액 집계
+            r_coupon_received = r.get("coupon_received", 0)
+            if r_coupon_received > 0:
+                if currency == "JPY":
+                    coupon_received_totals["jpy"] += r_coupon_received
+                elif p_type == "bank":
+                    coupon_received_totals["bank_krw"] += r_coupon_received
+                else:
+                    coupon_received_totals["cash_krw"] += r_coupon_received
+
             items = r.get("items", [])
 
-            # 할인 유형별 차감액 집계 (쿠폰 할인 분기 추가)
+            # 할인 유형별 차감액 집계
             if d_type == "student":
                 if currency == "JPY": 
                     discount_totals["student_jpy"] += r_discount_amt
@@ -96,7 +124,6 @@ class ReceiptExcelExporter:
                     discount_totals["academy_cash_krw"] += r_discount_amt
 
             elif d_type == "coupon" or r_discount_amt > 0:
-                # 쿠폰 및 임의 할인액 집계
                 if currency == "JPY": 
                     discount_totals["coupon_jpy"] += r_discount_amt
                 elif p_type == "bank": 
@@ -139,7 +166,6 @@ class ReceiptExcelExporter:
                     if p_type == "cash": st["acad_cash"] += qty
                     elif p_type == "bank": st["acad_bank"] += qty
                 else:
-                    # 일반/쿠폰 할인의 경우 수량은 일반 열에 포함해 정가 소계를 도출
                     if p_type == "cash": st["norm_cash"] += qty
                     elif p_type == "bank": st["norm_bank"] += qty
 
@@ -157,6 +183,7 @@ class ReceiptExcelExporter:
         fill_sub_title = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
         fill_sum_row = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
         fill_discount_row = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid")
+        fill_coupon_pay_row = PatternFill(start_color="F8CBAD", end_color="F8CBAD", fill_type="solid")
 
         thin_border = Border(
             left=Side(style='thin'), right=Side(style='thin'),
@@ -166,7 +193,7 @@ class ReceiptExcelExporter:
         align_right = Alignment(horizontal='right', vertical='center')
         align_left = Alignment(horizontal='left', vertical='center')
 
-        # 타이틀 레이아웃 (A~T 컬럼)
+        # 타이틀 레이아웃
         ws.merge_cells("A1:N2")
         ws["A1"].value = "만물복귀 카페팀 일일 판매 보고서"
         ws["A1"].font = font_title; ws["A1"].fill = fill_green; ws["A1"].alignment = align_center
@@ -252,7 +279,7 @@ class ReceiptExcelExporter:
 
         end_data_row = row_idx - 1
 
-        # 셀 서식
+        # 데이터 셀 서식 적용
         for r_num in range(start_data_row, row_idx):
             for c_num in range(1, 21):
                 cell = ws.cell(row=r_num, column=c_num)
@@ -280,7 +307,7 @@ class ReceiptExcelExporter:
             elif c_num == 15: cell.alignment = align_right; cell.number_format = '"¥"#,##0'
             elif c_num in [16, 17, 18]: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
 
-        # 5. 할인 종류별 차감 행 (수련생 / 아카데미 / 쿠폰 할인 추가)
+        # 5. 할인 종류별 차감 행 (3종)
         disc_start_row = subtotal_row + 1
         
         # 5-1. 수련생 할인 차감
@@ -301,7 +328,7 @@ class ReceiptExcelExporter:
         ws.cell(row=row_academy, column=17, value=-discount_totals["academy_bank_krw"])
         ws.cell(row=row_academy, column=18, value=f"=P{row_academy}+Q{row_academy}")
 
-        # 5-3. [신규 추가] 쿠폰 할인 차감
+        # 5-3. 쿠폰 할인 차감
         row_coupon = disc_start_row + 2
         ws.merge_cells(start_row=row_coupon, start_column=1, end_row=row_coupon, end_column=14)
         ws.cell(row=row_coupon, column=1, value="쿠폰 할인 차감액").alignment = align_center
@@ -317,11 +344,29 @@ class ReceiptExcelExporter:
                 if c_num == 15: cell.alignment = align_right; cell.number_format = '"¥"#,##0'
                 elif c_num in [16, 17, 18]: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
 
-        # 6. 최종 실매출 합계 행 (정가 소계 + 할인 차감액 3종 합산)
-        final_row = disc_start_row + 3
+        # [핵심 2] 5-4. 받은 쿠폰(지불수단) 차감액 영역 생성 (쿠폰 할인 차감액 영역 바로 밑)
+        row_received_coupon = disc_start_row + 3
+        ws.merge_cells(start_row=row_received_coupon, start_column=1, end_row=row_received_coupon, end_column=14)
+        ws.cell(row=row_received_coupon, column=1, value="쿠폰(지불수단) 차감액").alignment = align_center
+        
+        ws.cell(row=row_received_coupon, column=15, value=-coupon_received_totals["jpy"])
+        ws.cell(row=row_received_coupon, column=16, value=-coupon_received_totals["cash_krw"])
+        ws.cell(row=row_received_coupon, column=17, value=-coupon_received_totals["bank_krw"])
+        ws.cell(row=row_received_coupon, column=18, value=f"=P{row_received_coupon}+Q{row_received_coupon}")
+
+        for c_num in range(1, 21):
+            cell = ws.cell(row=row_received_coupon, column=c_num)
+            cell.border = thin_border; cell.font = font_sum; cell.fill = fill_coupon_pay_row
+            if c_num == 15: cell.alignment = align_right; cell.number_format = '"¥"#,##0'
+            elif c_num in [16, 17, 18]: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
+
+        # [핵심 3] 6. 최종 실매출 합계 행 (주문 소계 + 할인 차감액 3종 + 받은 쿠폰 지불수단 차감액 합산)
+        final_row = disc_start_row + 4
         ws.merge_cells(start_row=final_row, start_column=1, end_row=final_row, end_column=14)
         ws.cell(row=final_row, column=1, value="최종 실매출 합계").alignment = align_center
-        disc_end_row = disc_start_row + 2
+        
+        # O, P, Q, R 열에 주문 소계부터 할인 차감 및 받은 쿠폰 차감액까지 전체 합산하는 엑셀 수식 적용
+        disc_end_row = row_received_coupon
         
         ws.cell(row=final_row, column=15, value=f"=O{subtotal_row}+SUM(O{disc_start_row}:O{disc_end_row})")
         ws.cell(row=final_row, column=16, value=f"=P{subtotal_row}+SUM(P{disc_start_row}:P{disc_end_row})")
@@ -336,7 +381,69 @@ class ReceiptExcelExporter:
             if c_num in [19, 20]: cell.alignment = align_center; cell.number_format = '#,##0'
             elif c_num == 15: cell.alignment = align_right; cell.number_format = '"¥"#,##0'
             elif c_num in [16, 17, 18]: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
+        # --------------------------------------------------------------------------
+        # 시트 2: 영수증 내역 (오류 방지 적용)
+        # --------------------------------------------------------------------------
+        ws2: Worksheet = wb.create_sheet(title="영수증 내역")
+        ws2.views.sheetView[0].showGridLines = True
 
+        font_rcpt_title = Font(name="Consolas", size=11, bold=True, color="0026FF")
+        font_rcpt_text = Font(name="Consolas", size=9.5)
+
+        curr_row = 2
+
+        if not receipts:
+            ws2.cell(
+            row=curr_row, column=2, value="해당 일자의 영수증 내역이 없습니다."
+        )
+        else:
+            for idx, r in enumerate(receipts, start=1):
+                rcpt_id = r.get("id", idx)
+                rcpt_text = r.get("receipt_text", "")
+                timestamp = r.get("timestamp", "")
+
+                # 1. 영수증 헤더 타이틀 (병합 셀 탑-레프트 셀 B열에만 안전 배치)
+                ws2.merge_cells(
+                    start_row=curr_row, start_column=2, end_row=curr_row, end_column=6
+                )
+                header_cell = ws2.cell(
+                    row=curr_row,
+                    column=2,
+                    value=f"■ 영수증 No. {rcpt_id} ({timestamp})",
+                )
+                header_cell.font = font_rcpt_title
+                header_cell.alignment = Alignment(vertical="center")
+                header_cell.number_format = "@"  # Explicit Text Format
+                curr_row += 1
+
+                # 2. 영수증 텍스트 수식 이스케이프 및 셀 안전 기록
+                if rcpt_text:
+                    lines = rcpt_text.splitlines()
+                    for line in lines:
+                        ws2.merge_cells(
+                            start_row=curr_row,
+                            start_column=2,
+                            end_row=curr_row,
+                            end_column=6,
+                        )
+
+                        # 수식 오인 방지 텍스트 정제
+                        safe_text = self._sanitize_excel_text(line)
+
+                        cell = ws2.cell(row=curr_row, column=2, value=safe_text)
+                        cell.font = font_rcpt_text
+                        cell.alignment = Alignment(horizontal="left", vertical="center")
+                        cell.number_format = "@"  # 텍스트 전용 지정 (수식 파싱 방지)
+
+                        if "===" in line or "---" in line:
+                            cell.font = Font(name="Consolas", size=9, color="888888")
+
+                        curr_row += 1
+
+                curr_row += 2  # 영수증 간 간격
+
+        ws2.column_dimensions["A"].width = 3
+        ws2.column_dimensions["B"].width = 55
         wb.save(export_file_path)
         print(f"[Service] 엑셀 보고서 내보내기 성공: {export_file_path}")
         return True

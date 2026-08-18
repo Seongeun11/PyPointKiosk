@@ -47,6 +47,9 @@
        <property name="text">
         <string>할인을 선택해주세요</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
       </widget>
      </item>
      <item>
@@ -81,7 +84,10 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="btn_coupon">
+        <widget class="QPushButton" name="btn_coupon_discount">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -89,7 +95,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>쿠폰</string>
+          <string>쿠폰 n% 할인</string>
          </property>
         </widget>
        </item>
@@ -146,7 +152,8 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>아카데미 포인트</string>
+        <string>아카데미
+포인트</string>
        </property>
       </widget>
      </item>
@@ -161,6 +168,9 @@
        <property name="text">
         <string>결제 수단을 선택해주세요</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
       </widget>
      </item>
      <item row="1" column="0" colspan="3">
@@ -173,6 +183,9 @@
        </property>
        <property name="text">
         <string>카드 결제는 지원하지 않습니다.</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -192,84 +205,6 @@
      <property name="bottomMargin">
       <number>0</number>
      </property>
-     <item row="4" column="0">
-      <widget class="QLabel" name="lb_discount_amount">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>할인 금액</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLabel" name="lb_discount_amount_num">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>TextLabel</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2" rowspan="5">
-      <widget class="QPushButton" name="btn_all_clear_discount">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>할인 전체 취소</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0" colspan="3">
-      <widget class="Line" name="horizn_line">
-       <property name="frameShadow">
-        <enum>QFrame::Shadow::Plain</enum>
-       </property>
-       <property name="lineWidth">
-        <number>2</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="2" rowspan="4">
-      <widget class="QPushButton" name="btn_amount_received">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>받은 금액</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1" rowspan="2">
-      <widget class="QLabel" name="lb_payment_amount_num">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>TextLabel</string>
-       </property>
-      </widget>
-     </item>
      <item row="5" column="0" rowspan="2">
       <widget class="QLabel" name="lb_payment_amount">
        <property name="sizePolicy">
@@ -279,7 +214,33 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>결제 금액</string>
+        <string>할인 후 금액</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1" rowspan="2">
+      <widget class="QLabel" name="lb_remaining_amount_num">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="2" rowspan="5">
+      <widget class="QPushButton" name="btn_amount_received">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>받은 금액</string>
        </property>
       </widget>
      </item>
@@ -296,6 +257,39 @@
        </property>
       </widget>
      </item>
+     <item row="2" column="2" rowspan="5">
+      <widget class="QPushButton" name="btn_all_clear_discount">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>전체 취소</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="0" rowspan="2">
+      <widget class="QLabel" name="lb_remaining_amount">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>거스름돈</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QLabel" name="lb_received_coupon_num">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
      <item row="2" column="1" rowspan="2">
       <widget class="QLabel" name="lb_purchase_amount_num">
        <property name="sizePolicy">
@@ -309,6 +303,19 @@
        </property>
       </widget>
      </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="lb_discount_amount">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>할인 금액</string>
+       </property>
+      </widget>
+     </item>
      <item row="8" column="0" rowspan="2">
       <widget class="QLabel" name="lb_amount_received">
        <property name="sizePolicy">
@@ -318,7 +325,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>받은 금액</string>
+        <string>받은 현금</string>
        </property>
       </widget>
      </item>
@@ -335,8 +342,15 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="1" rowspan="2">
-      <widget class="QLabel" name="lb_remaining_amount_num">
+     <item row="10" column="0">
+      <widget class="QLabel" name="lb_received_coupon">
+       <property name="text">
+        <string>받은 쿠폰</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1" rowspan="2">
+      <widget class="QLabel" name="lb_payment_amount_num">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -348,8 +362,8 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="0" rowspan="2">
-      <widget class="QLabel" name="lb_remaining_amount">
+     <item row="4" column="1">
+      <widget class="QLabel" name="lb_discount_amount_num">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -357,7 +371,20 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>거스름 금액</string>
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0" colspan="3">
+      <widget class="Line" name="horizn_line">
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Plain</enum>
+       </property>
+       <property name="lineWidth">
+        <number>2</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>

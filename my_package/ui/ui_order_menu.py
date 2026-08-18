@@ -73,7 +73,7 @@ class Ui_Form(object):
         self.lst_my_order_details = QListWidget(Form)
         QListWidgetItem(self.lst_my_order_details)
         self.lst_my_order_details.setObjectName(u"lst_my_order_details")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.lst_my_order_details.sizePolicy().hasHeightForWidth())
@@ -103,11 +103,8 @@ class Ui_Form(object):
 
         self.btn_payment = QPushButton(Form)
         self.btn_payment.setObjectName(u"btn_payment")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.btn_payment.sizePolicy().hasHeightForWidth())
-        self.btn_payment.setSizePolicy(sizePolicy3)
+        sizePolicy1.setHeightForWidth(self.btn_payment.sizePolicy().hasHeightForWidth())
+        self.btn_payment.setSizePolicy(sizePolicy1)
         self.btn_payment.setMinimumSize(QSize(0, 0))
         self.btn_payment.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
         self.btn_payment.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -117,15 +114,16 @@ class Ui_Form(object):
 
         self.btn_all_delete = QPushButton(Form)
         self.btn_all_delete.setObjectName(u"btn_all_delete")
-        sizePolicy3.setHeightForWidth(self.btn_all_delete.sizePolicy().hasHeightForWidth())
-        self.btn_all_delete.setSizePolicy(sizePolicy3)
+        sizePolicy1.setHeightForWidth(self.btn_all_delete.sizePolicy().hasHeightForWidth())
+        self.btn_all_delete.setSizePolicy(sizePolicy1)
 
         self.gridLayout_2.addWidget(self.btn_all_delete, 0, 1, 2, 2)
 
 
         self.horizontalLayout_3.addLayout(self.gridLayout_2)
 
-        self.horizontalLayout_3.setStretch(1, 1)
+        self.horizontalLayout_3.setStretch(0, 1)
+        self.horizontalLayout_3.setStretch(1, 2)
 
         self.verticalLayout.addLayout(self.horizontalLayout_3)
 
