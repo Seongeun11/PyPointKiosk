@@ -382,27 +382,36 @@ class ReceiptExcelExporter:
             elif c_num == 15: cell.alignment = align_right; cell.number_format = '"¥"#,##0'
             elif c_num in [16, 17, 18]: cell.alignment = align_right; cell.number_format = '"₩"#,##0'
         # --------------------------------------------------------------------------
-        # 시트 2: 영수증 내역 (오류 방지 적용)
+        # 시트 2: 영수증 내역 (전체 외곽/내부 테두리 및 카드 양식 적용)
         # --------------------------------------------------------------------------
         ws2: Worksheet = wb.create_sheet(title="영수증 내역")
         ws2.views.sheetView[0].showGridLines = True
 
         font_rcpt_title = Font(name="Consolas", size=11, bold=True, color="0026FF")
         font_rcpt_text = Font(name="Consolas", size=9.5)
+        fill_header = PatternFill(
+            start_color="F2F2F2", end_color="F2F2F2", fill_type="solid"
+        )
+
+        # 테두리 스타일 정의
+        side_outer_thin = Side(style="thin", color="888888")
+        side_inner_gray = Side(style="thin", color="E0E0E0")
 
         curr_row = 2
 
         if not receipts:
             ws2.cell(
-            row=curr_row, column=2, value="해당 일자의 영수증 내역이 없습니다."
-        )
+                row=curr_row, column=2, value="해당 일자의 영수증 내역이 없습니다."
+            )
         else:
             for idx, r in enumerate(receipts, start=1):
                 rcpt_id = r.get("id", idx)
                 rcpt_text = r.get("receipt_text", "")
                 timestamp = r.get("timestamp", "")
 
-                # 1. 영수증 헤더 타이틀 (병합 셀 탑-레프트 셀 B열에만 안전 배치)
+                block_start_row = curr_row
+
+                # 1. 영수증 헤더 타이틀
                 ws2.merge_cells(
                     start_row=curr_row, start_column=2, end_row=curr_row, end_column=6
                 )
@@ -413,10 +422,15 @@ class ReceiptExcelExporter:
                 )
                 header_cell.font = font_rcpt_title
                 header_cell.alignment = Alignment(vertical="center")
-                header_cell.number_format = "@"  # Explicit Text Format
+                header_cell.number_format = "@"
+
+                # 헤더 행 B~F 전체에 배경색 지정
+                for c in range(2, 7):
+                    ws2.cell(row=curr_row, column=c).fill = fill_header
+
                 curr_row += 1
 
-                # 2. 영수증 텍스트 수식 이스케이프 및 셀 안전 기록
+                # 2. 영수증 텍스트 행 출력
                 if rcpt_text:
                     lines = rcpt_text.splitlines()
                     for line in lines:
@@ -427,20 +441,43 @@ class ReceiptExcelExporter:
                             end_column=6,
                         )
 
-                        # 수식 오인 방지 텍스트 정제
                         safe_text = self._sanitize_excel_text(line)
 
                         cell = ws2.cell(row=curr_row, column=2, value=safe_text)
                         cell.font = font_rcpt_text
                         cell.alignment = Alignment(horizontal="left", vertical="center")
-                        cell.number_format = "@"  # 텍스트 전용 지정 (수식 파싱 방지)
+                        cell.number_format = "@"
 
                         if "===" in line or "---" in line:
                             cell.font = Font(name="Consolas", size=9, color="888888")
 
                         curr_row += 1
 
-                curr_row += 2  # 영수증 간 간격
+                    block_end_row = curr_row - 1
+
+                    # 3. 영수증 전체 카드 박스 테두리(Border) 적용 (B~F열, block_start_row ~ block_end_row)
+                    for r_i in range(block_start_row, block_end_row + 1):
+                        for c_i in range(2, 7):
+                            cell = ws2.cell(row=r_i, column=c_i)
+
+                            # 상, 하, 좌, 우 위치 판단 후 외곽선 및 내부 테두리 지정
+                            top_border = (
+                                side_outer_thin if r_i == block_start_row else side_inner_gray
+                            )
+                            bottom_border = (
+                                side_outer_thin if r_i == block_end_row else side_inner_gray
+                            )
+                            left_border = side_outer_thin if c_i == 2 else Side(style=None)
+                            right_border = side_outer_thin if c_i == 6 else Side(style=None)
+
+                            cell.border = Border(
+                                top=top_border,
+                                bottom=bottom_border,
+                                left=left_border,
+                                right=right_border,
+                            )
+
+                    curr_row += 2  # 영수증 간 간격
 
         ws2.column_dimensions["A"].width = 3
         ws2.column_dimensions["B"].width = 55
