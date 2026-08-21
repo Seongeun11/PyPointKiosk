@@ -12,7 +12,7 @@ class MainMenuModel:
         elif message == "ko_jpy":
             self._text = "주문하기 (엔화)"
         elif message == "ko_krw":
-            self._text = "주문하기 (원화)"
+            self._text = "주문하기"
         else:
             self._text = "주문하기"
         return self._text

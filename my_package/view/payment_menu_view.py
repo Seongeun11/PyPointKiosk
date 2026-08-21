@@ -2,7 +2,7 @@
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QColor, QPalette
-from my_package.ui.ui_payment_menu import Ui_Form
+from my_package.ui.ui_payment_menu_widget import Ui_Form
 from my_package.utils.base_scaled_manager import BaseScaledWidget
 
 class PaymentMenuView(BaseScaledWidget):
@@ -62,17 +62,17 @@ class PaymentMenuView(BaseScaledWidget):
                     if is_jpy:
                         # 엔화 모드: 버튼 비활성화 및 안내 문구 노출
                         self.ui.btn_academy_discount.setEnabled(False)
-                        self.ui.btn_student_discount.setEnabled(False)
+                        #self.ui.btn_student_discount.setEnabled(False)
                         notice_text = "엔화는 할인 미지원" if not is_ja else "円は研修生のみ支援"
                         self.ui.btn_academy_discount.setText(notice_text)
-                        self.ui.btn_student_discount.setText(notice_text)
+                        #self.ui.btn_student_discount.setText(notice_text)
                         #self.lbl_bank_notice.setVisible(True)
                     else:
                         # 원화 모드: 버튼 활성화 및 안내 문구 비동기화/숨김
                         self.ui.btn_academy_discount.setEnabled(True)
                         self.ui.btn_academy_discount.setText("아카데미 할인" if not is_ja else "アカデミー割引")
-                        self.ui.btn_student_discount.setEnabled(True)
-                        self.ui.btn_student_discount.setText("수련생 할인" if not is_ja else "稽古生割引")
+                        #self.ui.btn_student_discount.setEnabled(True)
+                        #self.ui.btn_student_discount.setText("수련생 할인" if not is_ja else "稽古生割引")
                         #self.lbl_bank_notice.setVisible(False)
         if hasattr(self.ui, "btn_bank_transfer_payment"):
             if is_jpy:

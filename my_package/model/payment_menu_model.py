@@ -31,12 +31,12 @@ class PaymentMenuModel:
         self.unit = "¥" if self.currency == "JPY" else "원"
 
     def set_custom_discount(self, discount_type: str, discount_amount: int):
-        """다이얼로그에서 설정된 금액 반영"""
+        """다이얼로그에서 설정된 금액 반영 (구매 금액 초과 캡핑 제거)"""
         if discount_amount <= 0:
             self.clear_discount()
             return
 
-        self.discount_amount = min(discount_amount, self.purchase_amount)
+        self.discount_amount = discount_amount
         self.selected_discount_type = discount_type
 
     def togle_discount(self, discount_type: str):
@@ -57,16 +57,21 @@ class PaymentMenuModel:
         for item in self.cart_items:
             qty = item.get("quantity", 1)
             if discount_type == "student":
-                disc_per_unit = item.get("discount_student", 0)
+                # 엔화 결제 모드 시
+                if self.currency == "JPY":
+                
+                    disc_per_unit = item.get("discount_jpy", 0)
+                    print(f"엔화모드{disc_per_unit}")                
+                else:
+                    disc_per_unit = item.get("discount_student", 0)
+
             elif discount_type == "academy":
                 disc_per_unit = item.get("discount_academy", 0)
             elif discount_type == "coupon":
-                            disc_per_unit = item.get("discount_coupon", 0)
-            else:
-                disc_per_unit = 0
+                disc_per_unit = item.get("discount_coupon", 0)
 
-            # 엔화 결제 모드 시 할인액 없음
-            if self.currency == "JPY":
+            
+            else:
                 disc_per_unit = 0
 
             total_discount += (disc_per_unit * qty)
@@ -96,10 +101,9 @@ class PaymentMenuModel:
         return self.cash_received + self.coupon_received
 
     def get_change_amount(self) -> int:
-        """거스름돈 계산 (총 받은 금액 - 최종 결제 금액)"""
-        total_rec = self.get_total_received()
-        final_pay = self.get_final_payment_amount()
-        return max(0, total_rec - final_pay)
+        """거스름돈 계산: (총 받은 금액 + 전체 할인 금액) - 총 주문 금액"""
+        total_effective = self.get_total_received() + self.discount_amount
+        return max(0, total_effective - self.purchase_amount)
 
     def clear_discount(self):
         """할인 상태 전체 초기화"""

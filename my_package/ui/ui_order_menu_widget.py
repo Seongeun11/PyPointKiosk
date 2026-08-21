@@ -36,8 +36,8 @@ class Ui_Form(object):
         Form.setFont(font)
         Form.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
         Form.setAutoFillBackground(False)
-        self.verticalLayout = QVBoxLayout(Form)
-        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout_2 = QVBoxLayout(Form)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.btn_title = QPushButton(Form)
         self.btn_title.setObjectName(u"btn_title")
         sizePolicy.setHeightForWidth(self.btn_title.sizePolicy().hasHeightForWidth())
@@ -45,27 +45,27 @@ class Ui_Form(object):
         self.btn_title.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.btn_title.setStyleSheet(u"background-color: transparent; border: none;")
 
-        self.verticalLayout.addWidget(self.btn_title)
+        self.verticalLayout_2.addWidget(self.btn_title)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.verticalLayout_2.addLayout(self.horizontalLayout)
 
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.verticalLayout.addLayout(self.gridLayout)
+        self.verticalLayout_2.addLayout(self.gridLayout)
 
         self.btn_back = QPushButton(Form)
         self.btn_back.setObjectName(u"btn_back")
         sizePolicy.setHeightForWidth(self.btn_back.sizePolicy().hasHeightForWidth())
         self.btn_back.setSizePolicy(sizePolicy)
 
-        self.verticalLayout.addWidget(self.btn_back)
+        self.verticalLayout_2.addWidget(self.btn_back)
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
@@ -81,25 +81,35 @@ class Ui_Form(object):
 
         self.horizontalLayout_3.addWidget(self.lst_my_order_details)
 
-        self.gridLayout_2 = QGridLayout()
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.gridLayout_2.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
+        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.btn_all_delete = QPushButton(Form)
+        self.btn_all_delete.setObjectName(u"btn_all_delete")
+        sizePolicy.setHeightForWidth(self.btn_all_delete.sizePolicy().hasHeightForWidth())
+        self.btn_all_delete.setSizePolicy(sizePolicy)
+
+        self.verticalLayout.addWidget(self.btn_all_delete)
+
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.lb_select_products = QLabel(Form)
         self.lb_select_products.setObjectName(u"lb_select_products")
+        sizePolicy.setHeightForWidth(self.lb_select_products.sizePolicy().hasHeightForWidth())
+        self.lb_select_products.setSizePolicy(sizePolicy)
         self.lb_select_products.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_2.addWidget(self.lb_select_products, 2, 1, 1, 2)
+        self.horizontalLayout_2.addWidget(self.lb_select_products)
 
         self.lb_total_price = QLabel(Form)
         self.lb_total_price.setObjectName(u"lb_total_price")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.lb_total_price.sizePolicy().hasHeightForWidth())
-        self.lb_total_price.setSizePolicy(sizePolicy2)
+        sizePolicy.setHeightForWidth(self.lb_total_price.sizePolicy().hasHeightForWidth())
+        self.lb_total_price.setSizePolicy(sizePolicy)
         self.lb_total_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_2.addWidget(self.lb_total_price, 3, 1, 1, 2)
+        self.horizontalLayout_2.addWidget(self.lb_total_price)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
 
         self.btn_payment = QPushButton(Form)
         self.btn_payment.setObjectName(u"btn_payment")
@@ -110,22 +120,15 @@ class Ui_Form(object):
         self.btn_payment.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.btn_payment.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
-        self.gridLayout_2.addWidget(self.btn_payment, 4, 1, 1, 2)
-
-        self.btn_all_delete = QPushButton(Form)
-        self.btn_all_delete.setObjectName(u"btn_all_delete")
-        sizePolicy1.setHeightForWidth(self.btn_all_delete.sizePolicy().hasHeightForWidth())
-        self.btn_all_delete.setSizePolicy(sizePolicy1)
-
-        self.gridLayout_2.addWidget(self.btn_all_delete, 0, 1, 2, 2)
+        self.verticalLayout.addWidget(self.btn_payment)
 
 
-        self.horizontalLayout_3.addLayout(self.gridLayout_2)
+        self.horizontalLayout_3.addLayout(self.verticalLayout)
 
         self.horizontalLayout_3.setStretch(0, 1)
         self.horizontalLayout_3.setStretch(1, 2)
 
-        self.verticalLayout.addLayout(self.horizontalLayout_3)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
 
 
         self.retranslateUi(Form)
@@ -144,9 +147,9 @@ class Ui_Form(object):
         ___qlistwidgetitem.setText(QCoreApplication.translate("Form", u"1\ubc88", None))
         self.lst_my_order_details.setSortingEnabled(__sortingEnabled)
 
+        self.btn_all_delete.setText(QCoreApplication.translate("Form", u"\uc804\uccb4\uc0ad\uc81c", None))
         self.lb_select_products.setText(QCoreApplication.translate("Form", u"0\uac1c", None))
         self.lb_total_price.setText(QCoreApplication.translate("Form", u"\ucd1d 0\uc6d0", None))
         self.btn_payment.setText(QCoreApplication.translate("Form", u"\uacb0\uc81c\ud558\uae30", None))
-        self.btn_all_delete.setText(QCoreApplication.translate("Form", u"\uc804\uccb4\uc0ad\uc81c", None))
     # retranslateUi
 

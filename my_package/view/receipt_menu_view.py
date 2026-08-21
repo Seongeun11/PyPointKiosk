@@ -1,7 +1,7 @@
 #my_package\view\receipt_menu_view.py
-from PySide6.QtWidgets import QWidget
+
 from PySide6.QtCore import Signal
-from my_package.ui.ui_receipt_menu import Ui_Form
+from my_package.ui.ui_receipt_menu_widget import Ui_Form
 from my_package.utils.base_scaled_manager import BaseScaledWidget
 
 class ReceiptMenuView(BaseScaledWidget):

@@ -9,9 +9,9 @@ from my_package.utils.path_utils import get_project_root
 class ReceiptRepositoryModel:
     """
     영수증 일자별 JSON 데이터 저장 및 조회 전담 Model
-    새벽 2시에 영업마감
+    다음날 오전 9시에 영업마감
     """
-    CLOSING_OFFSET_HOURS = 2 # 새벽 2시 마감 기준 설정
+    CLOSING_OFFSET_HOURS = 9 # 정각 9시이후 마감 기준 설정
 
     def __init__(self, base_receipts_dir: str = "resources/receipts", products_path: str = "resources/products.json"):
         self.project_root = get_project_root()
@@ -64,6 +64,7 @@ class ReceiptRepositoryModel:
         coupon_received: int = 0,
         change_amount: int = 0,
         receipt_text: str = "",  # [신규] 영수증 뷰 텍스트 파라미터 추가
+        is_canceled: bool = False, # [추가] 취소 상태 플래그 기본값 설정
     ) -> dict:
         now = datetime.now()
         business_date_str = self.get_business_date_str(now)
@@ -87,6 +88,7 @@ class ReceiptRepositoryModel:
             "change_amount": change_amount,
             "items": cart_items,
             "receipt_text": receipt_text,  # [신규] 영수증 뷰 형식 그대로 JSON에 저장
+            "is_canceled": is_canceled, # [추가] JSON 기록 시 취소 플래그 포함
         }
 
         receipts.append(receipt_data)
@@ -99,7 +101,31 @@ class ReceiptRepositoryModel:
             print(f"[Model Error] 영수증 저장 실패: {e}")
 
         return receipt_data
+    
+    def cancel_receipt(self, receipt_id: int, date_str: Optional[str] = None) -> bool:
+        """[신규] 영수증 ID를 기반으로 주문 취소 상태(is_canceled=True) 업데이트"""
+        daily_file_path = self._get_daily_file_path(date_str)
+        receipts = self._load_receipts_by_path(daily_file_path)
+        
+        target_found = False
+        for r in receipts:
+            if r.get("id") == receipt_id:
+                r["is_canceled"] = True
+                r["canceled_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                target_found = True
+                break
 
+        if target_found:
+            try:
+                with open(daily_file_path, "w", encoding="utf-8") as f:
+                    json.dump(receipts, f, ensure_ascii=False, indent=2)
+                print(f"[Model] 주문 취소 성공 (ID: {receipt_id}): {daily_file_path}")
+                return True
+            except Exception as e:
+                print(f"[Model Error] 주문 취소 처리 실패: {e}")
+                return False
+        return False
+    
     def get_receipts_by_date(self, date_str: Optional[str] = None) -> list:
         file_path = self._get_daily_file_path(date_str)
         return self._load_receipts_by_path(file_path)

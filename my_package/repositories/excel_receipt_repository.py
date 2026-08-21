@@ -89,6 +89,10 @@ class ReceiptExcelExporter:
 
         # 2. 영수증 JSON 내역 상세 집계
         for r in receipts:
+            # [핵심] 취소된 주문일 경우 엑셀 통계 집계에서 제외
+            if r.get("is_canceled", False):
+                continue
+
             p_type = r.get("pay_type")        
             d_type = r.get("discount_type")   
             currency = r.get("currency", "KRW")
@@ -387,13 +391,17 @@ class ReceiptExcelExporter:
         ws2: Worksheet = wb.create_sheet(title="영수증 내역")
         ws2.views.sheetView[0].showGridLines = True
 
+        # 기본 일반 영수증 스타일[cite: 1]
         font_rcpt_title = Font(name="Consolas", size=11, bold=True, color="0026FF")
-        font_rcpt_text = Font(name="Consolas", size=9.5)
-        fill_header = PatternFill(
-            start_color="F2F2F2", end_color="F2F2F2", fill_type="solid"
-        )
+        fill_header = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
 
-        # 테두리 스타일 정의
+        # [신규] 취소 영수증 전용 스타일 정의[cite: 1]
+        font_rcpt_title_canceled = Font(name="Consolas", size=11, bold=True, color="C00000")
+        fill_header_canceled = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid")
+
+        font_rcpt_text = Font(name="Consolas", size=9.5)
+
+        # 테두리 스타일 정의[cite: 1]
         side_outer_thin = Side(style="thin", color="888888")
         side_inner_gray = Side(style="thin", color="E0E0E0")
 
@@ -408,29 +416,40 @@ class ReceiptExcelExporter:
                 rcpt_id = r.get("id", idx)
                 rcpt_text = r.get("receipt_text", "")
                 timestamp = r.get("timestamp", "")
+                
+                # [핵심] 주문 취소 여부 판단 플래그[cite: 1]
+                is_canceled = r.get("is_canceled", False)
 
                 block_start_row = curr_row
 
-                # 1. 영수증 헤더 타이틀
+                # 1. 영수증 헤더 타이틀 (취소 여부에 따라 텍스트 및 스타일 구분 적용)[cite: 1]
                 ws2.merge_cells(
                     start_row=curr_row, start_column=2, end_row=curr_row, end_column=6
                 )
+                
+                # [핵심] 취소 여부에 따른 제목 문구 설정[cite: 1]
+                title_prefix = "■ [주문취소]" if is_canceled else "■"
+                header_text = f"{title_prefix} 영수증 No. {rcpt_id} ({timestamp})"
+                
                 header_cell = ws2.cell(
                     row=curr_row,
                     column=2,
-                    value=f"■ 영수증 No. {rcpt_id} ({timestamp})",
+                    value=header_text,
                 )
-                header_cell.font = font_rcpt_title
+                
+                # [핵심] 취소 여부에 따른 폰트 지정[cite: 1]
+                header_cell.font = font_rcpt_title_canceled if is_canceled else font_rcpt_title
                 header_cell.alignment = Alignment(vertical="center")
                 header_cell.number_format = "@"
 
-                # 헤더 행 B~F 전체에 배경색 지정
+                # [핵심] 헤더 행 B~F 전체에 취소 여부에 따른 배경색 지정[cite: 1]
+                current_fill = fill_header_canceled if is_canceled else fill_header
                 for c in range(2, 7):
-                    ws2.cell(row=curr_row, column=c).fill = fill_header
+                    ws2.cell(row=curr_row, column=c).fill = current_fill
 
                 curr_row += 1
 
-                # 2. 영수증 텍스트 행 출력
+                # 2. 영수증 텍스트 행 출력[cite: 1]
                 if rcpt_text:
                     lines = rcpt_text.splitlines()
                     for line in lines:
@@ -455,12 +474,12 @@ class ReceiptExcelExporter:
 
                     block_end_row = curr_row - 1
 
-                    # 3. 영수증 전체 카드 박스 테두리(Border) 적용 (B~F열, block_start_row ~ block_end_row)
+                    # 3. 영수증 전체 카드 박스 테두리(Border) 적용 (B~F열, block_start_row ~ block_end_row)[cite: 1]
                     for r_i in range(block_start_row, block_end_row + 1):
                         for c_i in range(2, 7):
                             cell = ws2.cell(row=r_i, column=c_i)
 
-                            # 상, 하, 좌, 우 위치 판단 후 외곽선 및 내부 테두리 지정
+                            # 상, 하, 좌, 우 위치 판단 후 외곽선 및 내부 테두리 지정[cite: 1]
                             top_border = (
                                 side_outer_thin if r_i == block_start_row else side_inner_gray
                             )
@@ -477,7 +496,7 @@ class ReceiptExcelExporter:
                                 right=right_border,
                             )
 
-                    curr_row += 2  # 영수증 간 간격
+                    curr_row += 2  # 영수증 간 간격[cite: 1]
 
         ws2.column_dimensions["A"].width = 3
         ws2.column_dimensions["B"].width = 55

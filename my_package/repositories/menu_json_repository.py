@@ -98,6 +98,7 @@ class MenuJsonRepository:
                     "price_jpy": prod.get("price_jpy", int(prod.get("price", 0) // 10)),
                     "discount_student": prod.get("discount_student", 0), # [신규] 수련생 고정 할인
                     "discount_academy": prod.get("discount_academy", 0), # [신규] 아카데미 고정 할인
+                    "discount_jpy": prod.get("discount_jpy", 0), # [신규] 엔화 고정 할인
                     "image": prod.get("image", ""),
                     "is_sold_out": prod.get("is_sold_out", False)
                 }

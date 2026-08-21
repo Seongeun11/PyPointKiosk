@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QGroupBox, QLabel, 
+    QVBoxLayout, QHBoxLayout, QGroupBox, QLabel, 
     QSpinBox, QPushButton, QSizePolicy
 )
 from PySide6.QtCore import Qt
@@ -104,20 +104,39 @@ class AmountReceivedDialog(BaseScaledDialog):
         layout.addWidget(preset_group)
 
         # 3. 쿠폰 빠른 추가 [개편: 버튼 방식]
-        coupon_group = QGroupBox("쿠폰 추가 (+)")
+        coupon_group = QGroupBox("현금 직접 입력 (+)")
         coupon_layout = QHBoxLayout()
         coupon_amounts = self.COUPON_PRESETS_JPY if self.currency == "JPY" else self.COUPON_PRESETS_KRW
 
-        for amt in coupon_amounts:
-            btn_coupon_discount = QPushButton(f"+{amt:,}{self.unit}")
-            btn_coupon_discount.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            p_b_c_background = QPalette()
-            p_b_c_background.setColor(QPalette.ColorRole.Button, QColor("#5EE022"))
-            btn_coupon_discount.setPalette(p_b_c_background)
-            btn_coupon_discount.clicked.connect(lambda checked, a=amt: self._add_coupon(a))
-            coupon_layout.addWidget(btn_coupon_discount)
-
+        #for amt in coupon_amounts:
+        #    btn_coupon_discount = QPushButton(f"+{amt:,}{self.unit}")
+        #    btn_coupon_discount.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        #    p_b_c_background = QPalette()
+        #    p_b_c_background.setColor(QPalette.ColorRole.Button, QColor("#5EE022"))
+        #    btn_coupon_discount.setPalette(p_b_c_background)
+        #    btn_coupon_discount.clicked.connect(lambda checked, a=amt: self._add_coupon(a))
+        #    coupon_layout.addWidget(btn_coupon_discount)
+        self.coupon_custom = QSpinBox()
+        self.coupon_custom.setRange(0, 10000000)
+        self.coupon_custom.setSingleStep(500)
+        self.coupon_custom.setSuffix(f" {self.unit}")
+        self.coupon_custom.setSizePolicy(
+                                    QSizePolicy.Policy.Expanding, 
+                                    QSizePolicy.Policy.Expanding
+                                )
+        self.btn_add_coupon_custom = QPushButton("금액 추가")
+        self.btn_add_coupon_custom.setSizePolicy(
+                                    QSizePolicy.Policy.Expanding, 
+                                    QSizePolicy.Policy.Expanding
+                                )
+        self.btn_add_coupon_custom.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
+        self.btn_add_coupon_custom.clicked.connect(lambda checked, a=amt: self._add_coupon(a))
+        self.btn_add_coupon_custom.clicked.connect(self._on_add_coupon_clicked)
+        
+        coupon_layout.addWidget(self.coupon_custom)
+        coupon_layout.addWidget(self.btn_add_coupon_custom)
         coupon_group.setLayout(coupon_layout)
+        
         layout.addWidget(coupon_group)
 
         # 4. 하단 버튼
@@ -157,12 +176,13 @@ class AmountReceivedDialog(BaseScaledDialog):
     def _add_coupon(self, amount: int):
         self.coupon_amount += amount
         self._update_display()
-    #def _on_add_coupon_clicked(self):
-    #    val = self.sb_coupon.value()
-    #    if val > 0:
-    #        self.coupon_amount += val
-    #        self.sb_coupon.setValue(0)
-    #        self._update_display()
+
+    def _on_add_coupon_clicked(self):
+        val = self.coupon_custom.value()
+        if val > 0:
+            self.coupon_amount += val
+            self.coupon_custom.setValue(0)
+            self._update_display()
 
     def _reset_all(self):
         self.cash_amount = 0

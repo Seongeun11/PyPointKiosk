@@ -7,7 +7,7 @@ from PySide6.QtGui import QIcon, QResizeEvent, QShowEvent, QMouseEvent,QFontMetr
 from PySide6.QtCore import QSize, Qt, Signal, QTimer
 
 # 자동 생성된 UI 클래스 import
-from my_package.ui.ui_order_menu import Ui_Form 
+from my_package.ui.ui_order_menu_widget import Ui_Form 
 from my_package.custom_widget.cart_item_widget import CartItemWidget #장바구니 관리 클래스
 from my_package.utils.image_manager import ImageManager #이미지 관리 유틸리티 클래스
 from my_package.utils.base_scaled_manager import BaseScaledWidget

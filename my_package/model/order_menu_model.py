@@ -1,65 +1,51 @@
-#my_package\model\order_menu_model.py
-
 import os
 import shutil
 from typing import Optional
 from my_package.repositories.menu_json_repository import MenuJsonRepository
 from my_package.utils.image_manager import ImageManager
 from my_package.utils.path_utils import get_project_root
+
 class OrderMenuModel:
     """메뉴 데이터, 다국어(한국어/일본어) 및 장바구니 비즈니스 로직 관리 Model"""
 
     def __init__(self, json_path: str):
-        # path_utils를 통해 프로젝트/EXE 실행 위치 루트 획득
         self.base_dir = get_project_root()
-        
-        # 절대 경로와 상대 경로 결합 안전 보장
         if not os.path.isabs(json_path):
             self.json_path = os.path.join(self.base_dir, json_path)
         else:
             self.json_path = json_path
 
-        # 절대 경로(self.json_path)를 Repository에 전달
         self.repository = MenuJsonRepository(self.base_dir, self.json_path)
-
         self.categories: list = []
         self.current_category_idx: int = 0
         
-        # 언어 및 통화 상태 분리
-        self.raw_mode: str = "ko_krw" # [추가] 원본 모드 문자열 저장
-        self.current_lang: str = "ko"       # 'ko' 또는 'ja'
-        self.current_currency: str = "KRW"  # 'KRW' 또는 'JPY'
+        self.raw_mode: str = "ko_krw"
+        self.current_lang: str = "ko"
+        self.current_currency: str = "KRW"
 
-        # 장바구니 데이터 구조: { product_id: { "info": dict, "quantity": int } }
         self.cart: dict[str, dict] = {}
         self.load_data()
 
-    # --- 데이터 동기화 ---
     def load_data(self):
-        """Repository를 통한 데이터 로드"""
         self.categories = self.repository.load()
 
     def save_data(self):
-        """Repository를 통한 데이터 저장 및 최신화"""
         if self.repository.save(self.categories):
             self.load_data()
 
-    # --- 언어 및 통화 모드 설정 ---
     def set_language_mode(self, mode: str):
-        """'ko_krw', 'ko_jpy', 'ja_jpy' 규격 처리"""
-        self.raw_mode = mode.lower() if mode else "ko_krw" # [수정] 원본 모드 저장
+        self.raw_mode = mode.lower() if mode else "ko_krw"
         if self.raw_mode == "ja_jpy":
             self.current_lang = "ja"
             self.current_currency = "JPY"
         elif self.raw_mode == "ko_jpy":
             self.current_lang = "ko"
             self.current_currency = "JPY"
-        else:  # ko_krw 또는 기본값
+        else:
             self.current_lang = "ko"
             self.current_currency = "KRW"
 
     def get_mode(self) -> str:
-        """[신규] 설정된 원본 모드 반환"""
         return self.raw_mode
     
     def get_language(self) -> str:
@@ -71,9 +57,7 @@ class OrderMenuModel:
     def get_currency_unit(self) -> str:
         return "¥" if self.current_currency == "JPY" else "원"
 
-    # --- 카테고리 관리 ---
     def add_category(self, cat_name: str, cat_name_ja: str = "") -> bool:
-        """신규 카테고리 추가 (한국어/일본어 지원)"""
         if not cat_name:
             return False
 
@@ -96,7 +80,6 @@ class OrderMenuModel:
         return True
 
     def remove_category(self, category_id: str) -> tuple[bool, str]:
-        """카테고리 삭제 (상품 존재 여부 검증 및 안전 인덱스 조정)"""
         target_cat = None
         for cat in self.categories:
             if str(cat.get("title")) == str(category_id) or str(cat.get("id")) == str(category_id):
@@ -111,14 +94,10 @@ class OrderMenuModel:
 
         self.categories.remove(target_cat)
         self.save_data()
-
-        # 카테고리 삭제 후 선택 인덱스 안심 조정
         self._validate_current_category_idx()
-
         return True, "카테고리가 삭제되었습니다."
-    # --- 카테고리 순서 변경 ---
+
     def move_category_up(self, category_id: str) -> bool:
-        """선택한 카테고리를 한 칸 위로 이동"""
         idx = next((i for i, c in enumerate(self.categories) if str(c.get("title", c.get("id"))) == str(category_id)), -1)
         if idx > 0:
             self.categories[idx], self.categories[idx - 1] = self.categories[idx - 1], self.categories[idx]
@@ -127,7 +106,6 @@ class OrderMenuModel:
         return False
 
     def move_category_down(self, category_id: str) -> bool:
-        """선택한 카테고리를 한 칸 아래로 이동"""
         idx = next((i for i, c in enumerate(self.categories) if str(c.get("title", c.get("id"))) == str(category_id)), -1)
         if idx != -1 and idx < len(self.categories) - 1:
             self.categories[idx], self.categories[idx + 1] = self.categories[idx + 1], self.categories[idx]
@@ -135,19 +113,18 @@ class OrderMenuModel:
             return True
         return False
 
-    
     def _validate_current_category_idx(self):
-        """현재 카테고리 인덱스 유효성 검증 및 자동 보정"""
         if not self.categories:
             self.current_category_idx = 0
         elif self.current_category_idx >= len(self.categories):
             self.current_category_idx = max(0, len(self.categories) - 1)
 
-    # --- 상품 관리 ---
+    # --- 상품 관리 (discount_jpy 인자 반영) ---
     def add_product(self, category_id: str, prod_name: str, price: int,
-                    prod_name_ja: str = "", price_jpy: Optional[int] = None, 
-                    image_path: str = "", discount_student: int = 0, discount_academy: int = 0) -> bool:
-        """신규 상품 추가 (수련생/아카데미 고정 할인액 포함)"""
+                    price_jpy: Optional[int] = None, image_path: str = "", 
+                    discount_student: int = 0, discount_academy: int = 0, 
+                    discount_jpy: int = 0, prod_name_ja: str = "") -> bool:
+        """신규 상품 추가 (수련생/아카데미/엔화 고정 할인액 포함)"""
         for cat in self.categories:
             if str(cat.get("title")) == str(category_id) or str(cat.get("id")) == str(category_id):
                 existing_ids = [p["id"] for c in self.categories for p in c.get("products", []) if isinstance(p.get("id"), int)]
@@ -168,8 +145,9 @@ class OrderMenuModel:
                     "name_ja": prod_name_ja if prod_name_ja else prod_name,
                     "price": price,
                     "price_jpy": price_jpy if price_jpy is not None else int(price // 10),
-                    "discount_student": discount_student, # [신규]
-                    "discount_academy": discount_academy, # [신규]
+                    "discount_student": discount_student,
+                    "discount_academy": discount_academy,
+                    "discount_jpy": discount_jpy,
                     "image": rel_image_path,
                     "is_sold_out": False
                 }
@@ -185,8 +163,9 @@ class OrderMenuModel:
                             new_price: Optional[int] = None,
                             new_price_jpy: Optional[int] = None,
                             new_disc_student: Optional[int] = None,
-                            new_disc_academy: Optional[int] = None) -> bool:
-        """상품 정보 수정 (할인 금액 수정 포함)"""
+                            new_disc_academy: Optional[int] = None,
+                            new_disc_ja: Optional[int] = None) -> bool:
+        """상품 정보 수정 (엔화 할인 금액 수정 포함)"""
         target_prod = None
         current_cat = None
 
@@ -208,6 +187,7 @@ class OrderMenuModel:
         if new_price_jpy is not None: target_prod["price_jpy"] = new_price_jpy
         if new_disc_student is not None: target_prod["discount_student"] = new_disc_student
         if new_disc_academy is not None: target_prod["discount_academy"] = new_disc_academy
+        if new_disc_ja is not None: target_prod["discount_jpy"] = new_disc_ja
 
         if new_cat_name is not None and current_cat is not None and new_cat_name != current_cat.get("name"):
             dest_cat = next((c for c in self.categories if c["name"] == new_cat_name), None)
@@ -221,7 +201,6 @@ class OrderMenuModel:
         return True
 
     def remove_product(self, product_id: str) -> bool:
-        """상품 제거"""
         for cat in self.categories:
             products = cat.get("products", [])
             for p in products:
@@ -232,7 +211,6 @@ class OrderMenuModel:
         return False
 
     def toggle_sold_out(self, product_id: str) -> bool:
-        """판매/품절 상태 전환"""
         for cat in self.categories:
             for p in cat.get("products", []):
                 if str(p["id"]) == str(product_id):
@@ -241,9 +219,7 @@ class OrderMenuModel:
                     return True
         return False
 
-    # --- 뷰(View) 전용 조회 메서드 ---
     def get_categories(self) -> list:
-        """현재 선택된 언어에 맞춘 카테고리 목록 반환"""
         result = []
         for cat in self.categories:
             display_name = cat.get("name_ja") if self.current_lang == "ja" and cat.get("name_ja") else cat.get("name")
@@ -259,16 +235,13 @@ class OrderMenuModel:
         if 0 <= idx < len(self.categories):
             self.current_category_idx = idx
             
-    # --- 카테고리 관리 ---
     def update_category(self, category_id: str, new_name: str, new_name_ja: str = "") -> bool:
-        """카테고리 이름 변경 (한국어 / 일본어)"""
         if not new_name.strip():
             return False
 
         for cat in self.categories:
             if str(cat.get("title")) == str(category_id) or str(cat.get("id")) == str(category_id):
                 cat["name"] = new_name.strip()
-                # 일본어명이 지정되지 않았다면 기존 값 유지 또는 한국어명 지정
                 if new_name_ja.strip():
                     cat["name_ja"] = new_name_ja.strip()
                 elif "name_ja" not in cat or not cat["name_ja"]:
@@ -279,7 +252,6 @@ class OrderMenuModel:
         return False
     
     def get_current_products(self) -> list:
-        """현재 선택된 카테고리의 상품 정보 및 다국어/다중통화 계산된 정보 반환"""
         if not self.categories:
             self.current_category_idx = 0
             return []
@@ -301,7 +273,6 @@ class OrderMenuModel:
                 price = p.get("price", 0)
                 price_str = f"{price:,}원"
 
-            # ImageManager를 이용한 절대 경로 계산
             rel_image = p.get("image", "")
             abs_image_path = ImageManager.get_absolute_image_path(self.base_dir, rel_image)
 
@@ -314,11 +285,8 @@ class OrderMenuModel:
 
         return display_products
     
-    # --- 장바구니 비즈니스 로직 ---
     def add_to_cart(self, product_data: dict):
-        """장바구니 담기 (고유 ID 기반)"""
         p_id = str(product_data.get("id", product_data.get("name")))
-
         if p_id in self.cart:
             self.cart[p_id]["quantity"] += 1
         else:
@@ -328,7 +296,6 @@ class OrderMenuModel:
             }
 
     def change_quantity(self, product_id: str, delta: int):
-        """수량 변경 및 0 이하 시 자동 삭제"""
         p_id_str = str(product_id)
         if p_id_str in self.cart:
             self.cart[p_id_str]["quantity"] += delta
@@ -336,17 +303,14 @@ class OrderMenuModel:
                 self.remove_from_cart(p_id_str)
 
     def remove_from_cart(self, product_id: str):
-        """단일 상품 삭제"""
         p_id_str = str(product_id)
         if p_id_str in self.cart:
             del self.cart[p_id_str]
 
     def clear_cart(self):
-        """장바구니 전체 초기화"""
         self.cart.clear()
 
     def get_cart_items(self) -> list:
-        """장바구니 항목 추출 시 상품의 고정 할인 금액 정보도 함께 동기화해서 반환"""
         items = []
         is_ja_lang = (self.current_lang == "ja")
         is_jpy_curr = (self.current_currency == "JPY")
@@ -373,20 +337,20 @@ class OrderMenuModel:
                 "price": price,
                 "quantity": qty,
                 "total_price": total_price,
-                "discount_student": info.get("discount_student", 0), # [신규]
-                "discount_academy": info.get("discount_academy", 0), # [신규]
+                "discount_student": info.get("discount_student", 0),
+                "discount_academy": info.get("discount_academy", 0),
+                "discount_jpy": info.get("discount_jpy", 0),
                 "currency": self.current_currency,
                 "unit": unit,
                 "price_str": price_str
             })
+            #print("json저장완료")
         return items
 
     def get_total_count(self) -> int:
-        """장바구니 전체 수량 합계 계산"""
         return sum(data["quantity"] for data in self.cart.values())
 
     def get_total_price(self) -> int:
-        """현재 선택된 언어/통화 기준의 장바구니 총 금액 합계"""
         return sum(item["total_price"] for item in self.get_cart_items())
 
     def on_view_go_back(self, message: str):

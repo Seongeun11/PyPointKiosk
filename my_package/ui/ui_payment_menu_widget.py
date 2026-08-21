@@ -259,7 +259,7 @@ class Ui_Form(object):
         self.lb_select_discount.setText(QCoreApplication.translate("Form", u"\ud560\uc778\uc744 \uc120\ud0dd\ud574\uc8fc\uc138\uc694", None))
         self.btn_student_discount.setText(QCoreApplication.translate("Form", u"\uc218\ub828\uc0dd \ud560\uc778", None))
         self.btn_academy_discount.setText(QCoreApplication.translate("Form", u"\uc544\uce74\ub370\ubbf8 \ud560\uc778", None))
-        self.btn_coupon_discount.setText(QCoreApplication.translate("Form", u"\ucfe0\ud3f0 n% \ud560\uc778", None))
+        self.btn_coupon_discount.setText(QCoreApplication.translate("Form", u"\ucfe0\ud3f0 \ud560\uc778", None))
         self.btn_cash_payment.setText(QCoreApplication.translate("Form", u"\ud604\uae08 \uacb0\uc81c", None))
         self.btn_bank_transfer_payment.setText(QCoreApplication.translate("Form", u"\uacc4\uc88c \uc774\uccb4", None))
         self.btn_academy_point_payment.setText(QCoreApplication.translate("Form", u"\uc544\uce74\ub370\ubbf8\n"
